@@ -9,7 +9,7 @@ If you don't use bundler, install it by hand:
 
 =Documentation
 
-Reference documentation is available at rubydoc.info[http://rubydoc.info/gems/databasedotcom/frames]
+Reference documentation is available at rubydoc.info[http://rubydoc.info/github/heroku/databasedotcom/master/frames]
 
 =Source
 
