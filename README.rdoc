@@ -43,7 +43,7 @@ If you pass the name of a YAML file when you create a Client, the new Client wil
 
 Then
 
-    client = Databasedotcom::Client.new
+    client = Databasedotcom::Client.new("databasedotcom.yml")
     client.client_id      #=> bro
     client.client_secret  #=> baz
 
