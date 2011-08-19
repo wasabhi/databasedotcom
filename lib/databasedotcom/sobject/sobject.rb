@@ -3,12 +3,20 @@ module Databasedotcom
     # Parent class of dynamically created sobject types. Interacts with Force.com through a Client object that is passed in during materialization.
     class Sobject
       cattr_accessor :client
+      extend ActiveModel::Naming if defined?(ActiveModel::Naming)
 
       # Returns a new Sobject. The default values for all attributes are set based on its description.
-      def initialize
+      def initialize(attrs = {})
         super
         self.class.description["fields"].each do |field|
           self.send("#{field["name"]}=", field["defaultValueFormula"])
+        end
+        self.attributes=(attrs)
+      end
+
+      def attributes=(attrs)
+        attrs.each do |key, value|
+          self.send("#{key}=", value)
         end
       end
 
@@ -131,11 +139,6 @@ module Databasedotcom
         end
       end
 
-      # Returns a ObjectName constructed from the Sobject name. This is for form_for compatibility.
-      def self.model_name
-        ObjectName.new self.sobject_name
-      end
-
       # Returns the Force.com type of the attribute +attr_name+. Raises ArgumentError if attribute does not exist.
       #
       #    client.materialize("Car")
@@ -254,6 +257,23 @@ module Databasedotcom
       # Delegates to Client.create with arguments +object_attributes+ and self
       def self.create(object_attributes)
         self.client.create(self, object_attributes)
+      end
+
+      # Coerce values submitted from a Rails form to the values expected by the database
+      # returns a new hash with updated values
+      def self.coerce_params(params)
+        params.each do |attr, value|
+          case self.field_type(attr)
+            when "boolean"
+              params[attr] = value.is_a?(String) ? value.to_i != 0 : value
+            when "currency", "percent", "double"
+              params[attr] = value.to_f
+            when "date"
+              params[attr] = Date.parse(value) rescue Date.today
+            when "datetime"
+              params[attr] = DateTime.parse(value) rescue DateTime.now
+          end
+        end
       end
 
       private

@@ -72,6 +72,14 @@ describe Databasedotcom::Sobject::Sobject do
       @field_names = TestClass.description["fields"].collect { |f| f["name"] }
     end
 
+    describe ".new" do
+      it "creates a new in-memory instance with the specified attributes" do
+        obj = TestClass.new("Name" => "foo")
+        obj.Name.should == "foo"
+        obj.should be_new_record
+      end
+    end
+
     describe ".create" do
       it "returns a new instance with the specified attributes" do
         @client.should_receive(:create).with(TestClass, "moo").and_return("gar")
@@ -140,6 +148,40 @@ describe Databasedotcom::Sobject::Sobject do
         @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE conditions ORDER BY Id DESC LIMIT 1").and_return(["bar"])
         TestClass.last("conditions").should == "bar"
       end
+    end
+
+    describe ".coerce_params" do
+      it "coerces boolean attributes" do
+        TestClass.coerce_params("Checkbox_Field" => "1")["Checkbox_Field"].should be_true
+        TestClass.coerce_params("Checkbox_Field" => "0")["Checkbox_Field"].should be_false
+        TestClass.coerce_params("Checkbox_Field" => true)["Checkbox_Field"].should be_true
+        TestClass.coerce_params("Checkbox_Field" => false)["Checkbox_Field"].should be_false
+      end
+
+      it "coerces currency attributes" do
+        TestClass.coerce_params("Currency_Field" => "123.4")["Currency_Field"].should == 123.4
+        TestClass.coerce_params("Currency_Field" => 123.4)["Currency_Field"].should == 123.4
+      end
+
+      it "coerces percent attributes" do
+        TestClass.coerce_params("Percent_Field" => "123.4")["Percent_Field"].should == 123.4
+        TestClass.coerce_params("Percent_Field" => 123.4)["Percent_Field"].should == 123.4
+      end
+
+      it "coerces date fields" do
+        today = Date.today
+        Date.stub(:today).and_return(today)
+        TestClass.coerce_params("Date_Field" => "2010-04-01")["Date_Field"].should == Date.civil(2010, 4, 1)
+        TestClass.coerce_params("Date_Field" => "bogus")["Date_Field"].should == Date.today
+      end
+
+      it "coerces datetime fields" do
+        now = DateTime.now
+        DateTime.stub(:now).and_return(now)
+        TestClass.coerce_params("DateTime_Field" => "2010-04-01T12:05:10Z")["DateTime_Field"].to_time.to_i.should == DateTime.civil(2010, 4, 1, 12, 5, 10).to_time.to_i
+        TestClass.coerce_params("DateTime_Field" => "bogus")["DateTime_Field"].to_time.to_i.should == now.to_time.to_i
+      end
+
     end
 
     describe "dynamic finders" do
@@ -230,6 +272,15 @@ describe Databasedotcom::Sobject::Sobject do
             result.Email_Field.should == "foo@bar.com"
           end
         end
+      end
+    end
+
+    describe "#attributes=" do
+      it "updates the object with the provided attributes" do
+        obj = TestClass.new
+        obj.Name.should be_nil
+        obj.attributes = { "Name" => "foo" }
+        obj.Name.should == "foo"
       end
     end
 
@@ -404,12 +455,6 @@ describe Databasedotcom::Sobject::Sobject do
           obj = TestClass.new
           obj.Id = "foo"
           obj.to_param.should == "foo"
-        end
-      end
-
-      describe ".model_name" do
-        it "returns an ObjectName" do
-          TestClass.model_name.should be_instance_of(Databasedotcom::Sobject::ObjectName)
         end
       end
     end
