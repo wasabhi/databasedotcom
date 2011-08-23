@@ -23,6 +23,10 @@ module Databasedotcom
     attr_accessor :sobject_module
     # The SalesForce user id of the authenticated user
     attr_reader :user_id
+    # The SalesForce username
+    attr_accessor :username
+    # The SalesForce password
+    attr_accessor :password
 
     # Returns a new client object. _options_ can be one of the following
     #
@@ -51,13 +55,24 @@ module Databasedotcom
         @options = options
       end
 
-      self.client_id = ENV['DATABASEDOTCOM_CLIENT_ID'] || @options["client_id"] || @options[:client_id]
-      self.client_secret = ENV['DATABASEDOTCOM_CLIENT_SECRET'] || @options["client_secret"] || @options[:client_secret]
-      self.host = ENV['DATABASEDOTCOM_HOST'] || @options["host"] || @options[:host] || "login.salesforce.com"
-      self.debugging = ENV['DATABASEDOTCOM_DEBUGGING'] || @options["debugging"] || @options[:debugging]
-      self.version = ENV['DATABASEDOTCOM_VERSION'] || @options["version"] || @options[:version]
-      self.version = self.version.to_s if self.version
-      self.sobject_module = ENV['DATABASEDOTCOM_SOBJECT_MODULE'] || (@options && @options["sobject_module"]) || (@options && @options[:sobject_module])
+      if ENV['DATABASE_COM_URL']
+        url = URI.parse(ENV['DATABASE_COM_URL'])
+        url_options = Hash[url.query.split("&").map{|q| q.split("=")}].symbolize_keys!
+        self.host = url.host
+        self.client_id = url_options[:oauth_key]
+        self.client_secret = url_options[:oauth_secret]
+        self.username = url_options[:user]
+        self.password = url_options[:password]
+        self.sobject_module = "Databasedotcom::Sobject"
+      else
+        self.client_id = ENV['DATABASEDOTCOM_CLIENT_ID'] || @options["client_id"] || @options[:client_id]
+        self.client_secret = ENV['DATABASEDOTCOM_CLIENT_SECRET'] || @options["client_secret"] || @options[:client_secret]
+        self.host = ENV['DATABASEDOTCOM_HOST'] || @options["host"] || @options[:host] || "login.salesforce.com"
+        self.debugging = ENV['DATABASEDOTCOM_DEBUGGING'] || @options["debugging"] || @options[:debugging]
+        self.version = ENV['DATABASEDOTCOM_VERSION'] || @options["version"] || @options[:version]
+        self.version = self.version.to_s if self.version
+        self.sobject_module = ENV['DATABASEDOTCOM_SOBJECT_MODULE'] || (@options && @options["sobject_module"]) || (@options && @options[:sobject_module])
+      end
     end
 
     # Authenticate to the Force.com API.  _options_ is a Hash, interpreted as follows:
