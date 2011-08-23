@@ -54,6 +54,7 @@ module Databasedotcom
       else
         @options = options
       end
+      @options.symbolize_keys!
 
       if ENV['DATABASE_COM_URL']
         url = URI.parse(ENV['DATABASE_COM_URL'])
@@ -65,13 +66,13 @@ module Databasedotcom
         self.password = url_options[:password]
         self.sobject_module = "Databasedotcom::Sobject"
       else
-        self.client_id = ENV['DATABASEDOTCOM_CLIENT_ID'] || @options["client_id"] || @options[:client_id]
-        self.client_secret = ENV['DATABASEDOTCOM_CLIENT_SECRET'] || @options["client_secret"] || @options[:client_secret]
-        self.host = ENV['DATABASEDOTCOM_HOST'] || @options["host"] || @options[:host] || "login.salesforce.com"
-        self.debugging = ENV['DATABASEDOTCOM_DEBUGGING'] || @options["debugging"] || @options[:debugging]
-        self.version = ENV['DATABASEDOTCOM_VERSION'] || @options["version"] || @options[:version]
+        self.client_id = ENV['DATABASEDOTCOM_CLIENT_ID'] || @options[:client_id]
+        self.client_secret = ENV['DATABASEDOTCOM_CLIENT_SECRET'] || @options[:client_secret]
+        self.host = ENV['DATABASEDOTCOM_HOST'] || @options[:host] || "login.salesforce.com"
+        self.debugging = ENV['DATABASEDOTCOM_DEBUGGING'] || @options[:debugging]
+        self.version = ENV['DATABASEDOTCOM_VERSION'] || @options[:version]
         self.version = self.version.to_s if self.version
-        self.sobject_module = ENV['DATABASEDOTCOM_SOBJECT_MODULE'] || (@options && @options["sobject_module"]) || (@options && @options[:sobject_module])
+        self.sobject_module = ENV['DATABASEDOTCOM_SOBJECT_MODULE'] || (@options && @options[:sobject_module])
       end
     end
 
