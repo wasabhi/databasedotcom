@@ -64,17 +64,16 @@ module Databasedotcom
         self.client_secret = url_options[:oauth_secret]
         self.username = url_options[:user]
         self.password = url_options[:password]
-        self.sobject_module = "Databasedotcom::Sobject"
       else
         self.client_id = ENV['DATABASEDOTCOM_CLIENT_ID'] || @options[:client_id]
         self.client_secret = ENV['DATABASEDOTCOM_CLIENT_SECRET'] || @options[:client_secret]
         self.host = ENV['DATABASEDOTCOM_HOST'] || @options[:host] || "login.salesforce.com"
-        self.debugging = ENV['DATABASEDOTCOM_DEBUGGING'] || @options[:debugging]
-        self.version = ENV['DATABASEDOTCOM_VERSION'] || @options[:version]
-        self.version = self.version.to_s if self.version
-        self.sobject_module = ENV['DATABASEDOTCOM_SOBJECT_MODULE'] || (@options && @options[:sobject_module])
       end
-    end
+      self.debugging = ENV['DATABASEDOTCOM_DEBUGGING'] || @options[:debugging]
+      self.version = ENV['DATABASEDOTCOM_VERSION'] || @options[:version]
+      self.version = self.version.to_s if self.version
+      self.sobject_module = ENV['DATABASEDOTCOM_SOBJECT_MODULE'] || @options[:sobject_module]
+  end
 
     # Authenticate to the Force.com API.  _options_ is a Hash, interpreted as follows:
     #
@@ -355,7 +354,7 @@ module Databasedotcom
     end
 
     def module_namespace
-      self.sobject_module || Object
+      (self.sobject_module && eval(self.sobject_module)) || Object
     end
 
     def collection_from(response)
