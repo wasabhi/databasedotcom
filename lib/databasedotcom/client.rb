@@ -84,7 +84,7 @@ module Databasedotcom
     #
     # Raises SalesForceError if an error occurs
     def authenticate(options = nil)
-      if (options[:username] && options[:password])
+      if (options && options[:username] && options[:password])
         req = Net::HTTP.new(self.host, 443)
         req.use_ssl=true
         path = "/services/oauth2/token?grant_type=password&client_id=#{self.client_id}&client_secret=#{client_secret}&username=#{options[:username]}&password=#{options[:password]}"
