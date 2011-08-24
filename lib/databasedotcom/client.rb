@@ -354,7 +354,7 @@ module Databasedotcom
     end
 
     def module_namespace
-      (self.sobject_module && eval(self.sobject_module)) || Object
+      (self.sobject_module && self.sobject_module.constantize) || Object
     end
 
     def collection_from(response)
