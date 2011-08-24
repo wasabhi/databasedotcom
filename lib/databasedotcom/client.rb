@@ -354,7 +354,9 @@ module Databasedotcom
     end
 
     def module_namespace
-      (self.sobject_module && self.sobject_module.constantize) || Object
+      _module = self.sobject_module
+      _module = _module.constantize if _module.is_a? String
+      _module || Object
     end
 
     def collection_from(response)
