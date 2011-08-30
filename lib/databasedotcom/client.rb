@@ -109,7 +109,7 @@ module Databasedotcom
         end
       end
 
-      self.version = "23.0" unless self.version
+      self.version = "22.0" unless self.version
 
       self.oauth_token
     end

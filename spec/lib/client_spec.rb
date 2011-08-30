@@ -127,7 +127,7 @@ describe Databasedotcom::Client do
       @client.debugging = false
     end
 
-    it "defaults to 23.0" do
+    it "defaults to 22.0" do
       @client.version = nil
 
       response_body = File.read(File.join(File.dirname(__FILE__), '..', "fixtures/auth_success_response.json"))
@@ -136,7 +136,7 @@ describe Databasedotcom::Client do
       stub_request(:get, "https://na1.salesforce.com/services/data").to_return(:body => response_body, :status => 200)
 
       @client.authenticate(:username => "username", :password => "password")
-      @client.version.should == "23.0"
+      @client.version.should == "22.0"
     end
 
     context "with a username and password" do
