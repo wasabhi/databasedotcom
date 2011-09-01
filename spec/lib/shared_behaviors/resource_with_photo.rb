@@ -20,7 +20,8 @@ shared_examples_for("a resource with a photo") do
 
     it "uploads the photo and returns a hash containing photo info" do
       @client_mock.should_receive(:http_multipart_post).with("/services/data/v23/chatter/#{described_class.resource_name}/foo/photo", an_instance_of(Hash)).and_return(@response)
-      photo = described_class.upload_photo(@client_mock, "foo", StringIO.new("foo"), "image/gif")
+      file_mock = double("file", :read => "foo", :path => "filename")
+      photo = described_class.upload_photo(@client_mock, "foo", file_mock, "image/gif")
       photo.should be_instance_of(Hash)
     end
   end

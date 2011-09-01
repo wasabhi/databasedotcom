@@ -133,7 +133,7 @@ module Databasedotcom
     def materialize(classnames)
       classes = (classnames.is_a?(Array) ? classnames : [classnames]).collect do |clazz|
         original_classname = clazz
-        clazz = original_classname[0].capitalize + original_classname[1..-1]
+        clazz = original_classname[0,1].capitalize + original_classname[1..-1]
         unless module_namespace.const_defined?(clazz)
           new_class = module_namespace.const_set(clazz, Class.new(Databasedotcom::Sobject::Sobject))
           new_class.client = self

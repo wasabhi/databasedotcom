@@ -178,8 +178,8 @@ describe Databasedotcom::Sobject::Sobject do
       it "coerces datetime fields" do
         now = DateTime.now
         DateTime.stub(:now).and_return(now)
-        TestClass.coerce_params("DateTime_Field" => "2010-04-01T12:05:10Z")["DateTime_Field"].to_time.to_i.should == DateTime.civil(2010, 4, 1, 12, 5, 10).to_time.to_i
-        TestClass.coerce_params("DateTime_Field" => "bogus")["DateTime_Field"].to_time.to_i.should == now.to_time.to_i
+        TestClass.coerce_params("DateTime_Field" => "2010-04-01T12:05:10Z")["DateTime_Field"].to_s.should == DateTime.civil(2010, 4, 1, 12, 5, 10).to_s
+        TestClass.coerce_params("DateTime_Field" => "bogus")["DateTime_Field"].to_s.should == now.to_s
       end
 
     end

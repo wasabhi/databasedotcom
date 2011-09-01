@@ -7,7 +7,7 @@ module Databasedotcom
 
       # Returns a new Sobject. The default values for all attributes are set based on its description.
       def initialize(attrs = {})
-        super
+        super()
         self.class.description["fields"].each do |field|
           self.send("#{field["name"]}=", field["defaultValueFormula"])
         end
