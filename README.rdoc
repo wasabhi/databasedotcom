@@ -69,8 +69,8 @@ Then
 === Usage in an application deployed on Heroku
 You can use the <tt>heroku config:add</tt> command to set environment variables:
 
-    heroku config:add DATABASEDOTCOM_CIENT_ID=foo
-    heroku config:add DATABASEDOTCOM_CIENT_SECRET=bar
+    heroku config:add DATABASEDOTCOM_CLIENT_ID=foo
+    heroku config:add DATABASEDOTCOM_CLIENT_SECRET=bar
 
 Then, when you create your client like:
 
