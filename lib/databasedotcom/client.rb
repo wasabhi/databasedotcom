@@ -148,13 +148,9 @@ module Databasedotcom
     end
 
     # Returns an Array of Hashes listing the properties for every type of _Sobject_ in the database. Raises SalesForceError if an error occurs.
-    def describe_global
+    def describe_sobjects
       result = http_get("/services/data/v#{self.version}/sobjects")
-      if result.is_a?(Net::HTTPOK)
-        JSON.parse(result.body)["sobjects"]
-      elsif result.is_a?(Net::HTTPBadRequest)
-        raise SalesForceError.new(result)
-      end
+      JSON.parse(result.body)["sobjects"]
     end
 
     # Returns a description of the Sobject specified by _class_name_. The description includes all fields and their properties for the Sobject.

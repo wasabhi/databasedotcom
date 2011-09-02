@@ -273,28 +273,28 @@ describe Databasedotcom::Client do
       end
     end
     
-    describe "#describe_global" do
+    describe "#describe_sobjects" do
       context "with a successful request" do
         before do
-          @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/describe_global_success_response.json"))
+          @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/describe_sobjects_success_response.json"))
           stub_request(:get, "https://na1.salesforce.com/services/data/v23.0/sobjects").to_return(:body => @response_body, :status => 200)
         end
         
         it "returns an array of hashes listing the properties for available sobjects with a given version" do
-          @client.describe_global.first["name"].should == "Account"
-          @client.describe_global.first["createable"].should == true
+          @client.describe_sobjects.first["name"].should == "Account"
+          @client.describe_sobjects.first["createable"].should be_true
         end
       end
       
       context "with a failed request" do
         before do
-          @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/describe_global_error_response.json"))
+          @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/describe_sobjects_error_response.json"))
           stub_request(:get, "https://na1.salesforce.com/services/data/v23.0/sobjects").to_return(:body => @response_body, :status => 400)
         end
         
         it "raises a Databasedotcom::Sobject::SalesForceError" do
           lambda {
-            @client.describe_global
+            @client.describe_sobjects
           }.should raise_error(Databasedotcom::SalesForceError)
         end
       end
