@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
 
   s.files         = Dir['README.rdoc', 'MIT-LICENSE', 'lib/**/*']
   s.require_paths = ["lib"]
-  s.add_dependency('multipart-post', '>=1.1.3')
+  s.add_dependency('multipart-post', '~>1.1')
   s.add_dependency('json')
   s.add_development_dependency('rspec')
   s.add_development_dependency('webmock')
