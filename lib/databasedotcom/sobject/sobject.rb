@@ -77,7 +77,8 @@ module Databasedotcom
       #    c.save
       def save
         attr_hash = {}
-        self.class.description["fields"].select { |f| f["updateable"] }.collect { |f| f["name"] }.each { |attr| attr_hash[attr] = self.send(attr) }
+        selection_attr = self.Id.nil? ? "createable" : "updateable"
+        self.class.description["fields"].select { |f| f[selection_attr] }.collect { |f| f["name"] }.each { |attr| attr_hash[attr] = self.send(attr) }
 
         if self.Id.nil?
           self.client.create(self.class, attr_hash)
@@ -135,7 +136,13 @@ module Databasedotcom
         self.description["fields"].each do |field|
           name = field["name"]
           attr_accessor name.to_sym
-          self.type_map[name] = {:type => field["type"], :label => field["label"], :picklist_values => field["picklistValues"], :updateable? => field["updateable"]}
+          self.type_map[name] = {
+            :type => field["type"],
+            :label => field["label"],
+            :picklist_values => field["picklistValues"],
+            :updateable? => field["updateable"],
+            :createable? => field["createable"]
+          }
         end
       end
 
@@ -160,6 +167,11 @@ module Databasedotcom
       # Returns true if the attribute +attr_name+ can be updated. Raises ArgumentError if attribute does not exist.
       def self.updateable?(attr_name)
         self.type_map_attr(attr_name, :updateable?)
+      end
+
+      # Returns true if the attribute +attr_name+ can be created. Raises ArgumentError if attribute does not exist.
+      def self.createable?(attr_name)
+        self.type_map_attr(attr_name, :createable?)
       end
 
       # Delegates to Client.find with arguments +record_id+ and self

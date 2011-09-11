@@ -286,22 +286,44 @@ describe Databasedotcom::Sobject::Sobject do
 
     describe "#save" do
       context "with a new object" do
+        before do
+          @obj = TestClass.new
+          @obj.client = @client
+          @obj.Name = "testname"
+        end
+
         it "creates the record remotely with the set attributes" do
-          obj = TestClass.new
-          obj.client = @client
-          obj.Name = "testname"
           @client.should_receive(:create).and_return("saved")
-          obj.save.should == "saved"
+          @obj.save.should == "saved"
+        end
+
+        it "includes only the createable attributes" do
+          @client.should_receive(:create) do |clazz, attrs|
+            attrs.all? {|attr, value| TestClass.createable?(attr).should be_true}
+          end
+
+          @obj.save
         end
       end
 
-      context "with an object associated with a record" do
+      context "with an previously-persisted object" do
+        before do
+          @obj = TestClass.new
+          @obj.client = @client
+          @obj.Id = "rid"
+        end
+
         it "updates the record with the attributes of the object" do
-          obj = TestClass.new
-          obj.client = @client
-          obj.Id = "rid"
           @client.should_receive(:update).and_return("saved updates")
-          obj.save.should == "saved updates"
+          @obj.save.should == "saved updates"
+        end
+
+        it "includes only the updateable attributes" do
+          @client.should_receive(:update) do |clazz, id, attrs|
+            attrs.all? {|attr, value| TestClass.updateable?(attr).should be_true}
+          end
+
+          @obj.save
         end
       end
     end
@@ -385,6 +407,19 @@ describe Databasedotcom::Sobject::Sobject do
       it "raises ArgumentError for unknown attributes" do
         lambda {
           TestClass.updateable?("Foobar")
+        }.should raise_error(ArgumentError)
+      end
+    end
+
+    describe ".createable?" do
+      it "returns the createable flag for an attribute" do
+        TestClass.createable?("IsDeleted").should be_false
+        TestClass.createable?("Picklist_Field").should be_true
+      end
+
+      it "raises ArgumentError for unknown attributes" do
+        lambda {
+          TestClass.createable?("Foobar")
         }.should raise_error(ArgumentError)
       end
     end
