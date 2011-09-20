@@ -310,13 +310,17 @@ module Databasedotcom
     def within_request(path, opts = {}, parameters={}, headers={})
       req = Net::HTTP.new(URI.parse(self.instance_url).host, 443)
       req.use_ssl = true
-      path_parameters = (parameters || {}).collect { |k, v| "#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}" }.join('&')
-      encoded_path = [URI.escape(path), path_parameters.empty? ? nil : path_parameters].compact.join('?')
+      encoded_path = prepare_encoded_path_from(path, parameters)
       log_request(encoded_path, opts[:data]) #data is passed only in post
       result = yield(req, encoded_path)
       log_response(result)
       raise SalesForceError.new(result) unless result.is_a?(opts[:expected_result_class] || Net::HTTPSuccess)
       result
+    end
+
+    def prepare_encoded_path_from(path, parameters={})
+      path_parameters = (parameters || {}).collect { |k, v| "#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}" }.join('&')
+      [URI.escape(path), path_parameters.empty? ? nil : path_parameters].compact.join('?')
     end
 
     def log_request(path, data=nil)
