@@ -308,14 +308,16 @@ module Databasedotcom
     private
 
     def within_request(path, opts = {}, parameters={}, headers={})
-      req = Net::HTTP.new(URI.parse(self.instance_url).host, 443)
-      req.use_ssl = true
       encoded_path = prepare_encoded_path_from(path, parameters)
       log_request(encoded_path, opts[:data])
-      result = yield(req, encoded_path)
+      result = yield(secure_instance_url_request, encoded_path)
       log_response(result)
       raise SalesForceError.new(result) unless result.is_a?(opts[:expected_result_class] || Net::HTTPSuccess)
       result
+    end
+
+    def secure_instance_url_request
+      Net::HTTP.new(URI.parse(self.instance_url).host, 443).tap{|n| n.use_ssl = true }
     end
 
     def prepare_encoded_path_from(path, parameters={})
