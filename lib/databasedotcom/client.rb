@@ -262,15 +262,9 @@ module Databasedotcom
     # +Authorization+ header is automatically included, as are any additional headers specified in _headers_.  Returns the HTTPResult if it is of type
     # HTTPSuccess- raises SalesForceError otherwise.
     def http_get(path, parameters={}, headers={})
-      req = Net::HTTP.new(URI.parse(self.instance_url).host, 443)
-      req.use_ssl = true
-      path_parameters = (parameters || {}).collect { |k, v| "#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}" }.join('&')
-      encoded_path = [URI.escape(path), path_parameters.empty? ? nil : path_parameters].compact.join('?')
-      log_request(encoded_path)
-      result = req.get(encoded_path, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
-      log_response(result)
-      raise SalesForceError.new(result) unless result.is_a?(Net::HTTPSuccess)
-      result
+      within_request(path, {}, parameters, headers) do |req, encoded_path|
+        req.get(encoded_path, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
+      end
     end
 
 
@@ -278,45 +272,27 @@ module Databasedotcom
     # +Authorization+ header is automatically included, as are any additional headers specified in _headers_.  Returns the HTTPResult if it is of type
     # HTTPSuccess- raises SalesForceError otherwise.
     def http_delete(path, parameters={}, headers={})
-      req = Net::HTTP.new(URI.parse(self.instance_url).host, 443)
-      req.use_ssl = true
-      path_parameters = (parameters || {}).collect { |k, v| "#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}" }.join('&')
-      encoded_path = [URI.escape(path), path_parameters.empty? ? nil : path_parameters].compact.join('?')
-      log_request(encoded_path)
-      result = req.delete(encoded_path, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
-      log_response(result)
-      raise SalesForceError.new(result) unless result.is_a?(Net::HTTPNoContent)
-      result
+      within_request(path, {:expected_result_class => Net::HTTPNoContent}, parameters, headers) do |req, encoded_path|
+        req.delete(encoded_path, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
+      end
     end
 
     # Performs an HTTP POST request to the specified path (relative to self.instance_url).  The body of the request is taken from _data_.
     # Query parameters are included from _parameters_.  The required +Authorization+ header is automatically included, as are any additional
     # headers specified in _headers_.  Returns the HTTPResult if it is of type HTTPSuccess- raises SalesForceError otherwise.
     def http_post(path, data=nil, parameters={}, headers={})
-      req = Net::HTTP.new(URI.parse(self.instance_url).host, 443)
-      req.use_ssl = true
-      path_parameters = (parameters || {}).collect { |k, v| "#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}" }.join('&')
-      encoded_path = [URI.escape(path), path_parameters.empty? ? nil : path_parameters].compact.join('?')
-      log_request(encoded_path, data)
-      result = req.post(encoded_path, data, {"Content-Type" => data ? "application/json" : "text/plain", "Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
-      log_response(result)
-      raise SalesForceError.new(result) unless result.is_a?(Net::HTTPSuccess)
-      result
+      within_request(path, {:data => data}, parameters, headers) do |req, encoded_path|
+        req.post(encoded_path, data, {"Content-Type" => data ? "application/json" : "text/plain", "Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
+      end
     end
 
     # Performs an HTTP PATCH request to the specified path (relative to self.instance_url).  The body of the request is taken from _data_.
     # Query parameters are included from _parameters_.  The required +Authorization+ header is automatically included, as are any additional
     # headers specified in _headers_.  Returns the HTTPResult if it is of type HTTPSuccess- raises SalesForceError otherwise.
     def http_patch(path, data=nil, parameters={}, headers={})
-      req = Net::HTTP.new(URI.parse(self.instance_url).host, 443)
-      req.use_ssl = true
-      path_parameters = (parameters || {}).collect { |k, v| "#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}" }.join('&')
-      encoded_path = [URI.escape(path), path_parameters.empty? ? nil : path_parameters].compact.join('?')
-      log_request(encoded_path, data)
-      result = req.send_request("PATCH", encoded_path, data, {"Content-Type" => data ? "application/json" : "text/plain", "Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
-      log_response(result)
-      raise SalesForceError.new(result) unless result.is_a?(Net::HTTPSuccess)
-      result
+      within_request(path, {:data => data}, parameters, headers) do |req, encoded_path|
+        req.send_request("PATCH", encoded_path, data, {"Content-Type" => data ? "application/json" : "text/plain", "Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
+      end
     end
 
     # Performs an HTTP POST request to the specified path (relative to self.instance_url), using Content-Type multiplart/form-data.
@@ -324,18 +300,24 @@ module Databasedotcom
     # +Authorization+ header is automatically included, as are any additional headers specified in _headers_.
     # Returns the HTTPResult if it is of type HTTPSuccess- raises SalesForceError otherwise.
     def http_multipart_post(path, parts, parameters={}, headers={})
+      within_request(path, {:parts => parts}, parameters, headers) do |req, encoded_path|
+        req.request(Net::HTTP::Post::Multipart.new(encoded_path, parts, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers)))
+      end
+    end
+
+    private
+
+    def within_request(path, opts = {}, parameters={}, headers={})
       req = Net::HTTP.new(URI.parse(self.instance_url).host, 443)
       req.use_ssl = true
       path_parameters = (parameters || {}).collect { |k, v| "#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}" }.join('&')
       encoded_path = [URI.escape(path), path_parameters.empty? ? nil : path_parameters].compact.join('?')
-      log_request(encoded_path)
-      result = req.request(Net::HTTP::Post::Multipart.new(encoded_path, parts, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers)))
+      log_request(encoded_path, opts[:data]) #data is passed only in post
+      result = yield(req, encoded_path)
       log_response(result)
-      raise SalesForceError.new(result) unless result.is_a?(Net::HTTPSuccess)
+      raise SalesForceError.new(result) unless result.is_a?(opts[:expected_result_class] || Net::HTTPSuccess)
       result
     end
-
-    private
 
     def log_request(path, data=nil)
       puts "***** REQUEST: #{path.include?(':') ? path : URI.join(self.instance_url, path)}#{data ? " => #{data}" : ''}" if self.debugging
