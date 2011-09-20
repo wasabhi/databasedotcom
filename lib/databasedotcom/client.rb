@@ -311,7 +311,7 @@ module Databasedotcom
       req = Net::HTTP.new(URI.parse(self.instance_url).host, 443)
       req.use_ssl = true
       encoded_path = prepare_encoded_path_from(path, parameters)
-      log_request(encoded_path, opts[:data]) #data is passed only in post
+      log_request(encoded_path, opts[:data])
       result = yield(req, encoded_path)
       log_response(result)
       raise SalesForceError.new(result) unless result.is_a?(opts[:expected_result_class] || Net::HTTPSuccess)
