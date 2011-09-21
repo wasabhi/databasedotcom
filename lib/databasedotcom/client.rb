@@ -262,7 +262,7 @@ module Databasedotcom
     # +Authorization+ header is automatically included, as are any additional headers specified in _headers_.  Returns the HTTPResult if it is of type
     # HTTPSuccess- raises SalesForceError otherwise.
     def http_get(path, parameters={}, headers={})
-      within_request(path, {}, parameters, headers) do |req, encoded_path|
+      with_request(path, {}, parameters, headers) do |req, encoded_path|
         req.get(encoded_path, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
       end
     end
@@ -272,7 +272,7 @@ module Databasedotcom
     # +Authorization+ header is automatically included, as are any additional headers specified in _headers_.  Returns the HTTPResult if it is of type
     # HTTPSuccess- raises SalesForceError otherwise.
     def http_delete(path, parameters={}, headers={})
-      within_request(path, {:expected_result_class => Net::HTTPNoContent}, parameters, headers) do |req, encoded_path|
+      with_request(path, {:expected_result_class => Net::HTTPNoContent}, parameters, headers) do |req, encoded_path|
         req.delete(encoded_path, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
       end
     end
@@ -281,7 +281,7 @@ module Databasedotcom
     # Query parameters are included from _parameters_.  The required +Authorization+ header is automatically included, as are any additional
     # headers specified in _headers_.  Returns the HTTPResult if it is of type HTTPSuccess- raises SalesForceError otherwise.
     def http_post(path, data=nil, parameters={}, headers={})
-      within_request(path, {:data => data}, parameters, headers) do |req, encoded_path|
+      with_request(path, {:data => data}, parameters, headers) do |req, encoded_path|
         req.post(encoded_path, data, {"Content-Type" => data ? "application/json" : "text/plain", "Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
       end
     end
@@ -290,7 +290,7 @@ module Databasedotcom
     # Query parameters are included from _parameters_.  The required +Authorization+ header is automatically included, as are any additional
     # headers specified in _headers_.  Returns the HTTPResult if it is of type HTTPSuccess- raises SalesForceError otherwise.
     def http_patch(path, data=nil, parameters={}, headers={})
-      within_request(path, {:data => data}, parameters, headers) do |req, encoded_path|
+      with_request(path, {:data => data}, parameters, headers) do |req, encoded_path|
         req.send_request("PATCH", encoded_path, data, {"Content-Type" => data ? "application/json" : "text/plain", "Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
       end
     end
@@ -300,20 +300,24 @@ module Databasedotcom
     # +Authorization+ header is automatically included, as are any additional headers specified in _headers_.
     # Returns the HTTPResult if it is of type HTTPSuccess- raises SalesForceError otherwise.
     def http_multipart_post(path, parts, parameters={}, headers={})
-      within_request(path, {:parts => parts}, parameters, headers) do |req, encoded_path|
+      with_request(path, {:parts => parts}, parameters, headers) do |req, encoded_path|
         req.request(Net::HTTP::Post::Multipart.new(encoded_path, parts, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers)))
       end
     end
 
     private
 
-    def within_request(path, opts = {}, parameters={}, headers={})
+    def with_request(path, opts = {}, parameters={}, headers={})
       encoded_path = prepare_encoded_path_from(path, parameters)
       log_request(encoded_path, opts[:data])
       result = yield(secure_instance_url_request, encoded_path)
       log_response(result)
-      raise SalesForceError.new(result) unless result.is_a?(opts[:expected_result_class] || Net::HTTPSuccess)
+      ensure_result_is_as_expected(result, opts[:expected_result_class])
       result
+    end
+
+    def ensure_result_is_as_expected(result, expted_result_class)
+      raise SalesForceError.new(result) unless result.is_a?(expted_result_class ||  Net::HTTPSuccess)
     end
 
     def secure_instance_url_request
