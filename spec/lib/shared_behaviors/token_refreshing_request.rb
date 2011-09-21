@@ -15,6 +15,11 @@ shared_examples_for("a request that can refresh the oauth token") do |request_me
           stub_request(:post, "https://bro.baz/services/oauth2/token?client_id=client_id&client_secret=client_secret&grant_type=refresh_token&refresh_token=refresh").to_return(:body => response_body, :status => 200)
         end
         
+        it "stores the new access token" do
+          @client.send("http_#{request_method_name}", URI.parse(request_url).path, {})
+          @client.oauth_token.should == "refreshed_access_token"
+        end
+        
         it "retries the request" do
           @client.send("http_#{request_method_name}", URI.parse(request_url).path, {})
           WebMock.should have_requested(request_method, request_url).twice

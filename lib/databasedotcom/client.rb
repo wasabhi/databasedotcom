@@ -95,10 +95,7 @@ module Databasedotcom
         result = req.post(path, "")
         log_response(result)
         raise SalesForceError.new(result) unless result.is_a?(Net::HTTPOK)
-        json = JSON.parse(result.body)
-        @user_id = json["id"].match(/\/([^\/]+)$/)[1] rescue nil
-        self.instance_url = json["instance_url"]
-        self.oauth_token = json["access_token"]
+        parse_auth_response(result.body)
       elsif options.is_a?(Hash)
         if options.has_key?("provider")
           @user_id = options["extra"]["user_hash"]["user_id"] rescue nil
@@ -332,6 +329,9 @@ module Databasedotcom
           if response.is_a?(Net::HTTPUnauthorized) && self.refresh_token
             with_encoded_path_and_checked_response("/services/oauth2/token", { :grant_type => "refresh_token", :refresh_token => self.refresh_token, :client_id => self.client_id, :client_secret => self.client_secret}) do |encoded_path|
               response = https_request(self.host).post(encoded_path, nil)
+              if response.is_a?(Net::HTTPOK)
+                parse_auth_response(response.body)
+              end
               response
             end
 
@@ -449,6 +449,13 @@ module Databasedotcom
 
     def user_and_pass?(options)
       (self.username && self.password) || (options && options[:username] && options[:password])
+    end
+    
+    def parse_auth_response(body)
+      json = JSON.parse(body)
+      @user_id = json["id"].match(/\/([^\/]+)$/)[1] rescue nil
+      self.instance_url = json["instance_url"]
+      self.oauth_token = json["access_token"]
     end
   end
 end

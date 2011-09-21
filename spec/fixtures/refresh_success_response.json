@@ -3,5 +3,5 @@
     "issued_at": "1309974610026",
     "instance_url": "https://na1.salesforce.com",
     "signature": "sig=",
-    "access_token": "access_token"
+    "access_token": "refreshed_access_token"
 }
