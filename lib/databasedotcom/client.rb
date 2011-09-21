@@ -11,6 +11,8 @@ module Databasedotcom
     attr_accessor :client_secret
     # The OAuth access token in use by the client
     attr_accessor :oauth_token
+    # The OAuth refresh token in use by the client
+    attr_accessor :refresh_token
     # The base URL to the authenticated user's SalesForce instance
     attr_accessor :instance_url
     # If true, print API debugging information to stdout. Defaults to false.
@@ -79,7 +81,7 @@ module Databasedotcom
     #
     # * If _options_ contains the keys <tt>:username</tt> and <tt>:password</tt>, those credentials are used to authenticate. In this case, the value of <tt>:password</tt> may need to include a concatenated security token, if required by your Salesforce org
     # * If _options_ contains the key <tt>:provider</tt>, it is assumed to be the hash returned by Omniauth from a successful web-based OAuth2 authentication
-    # * If _options_ contains the keys <tt>:token</tt> and <tt>:instance_url</tt>, those are assumed to be a valid OAuth2 token and instance URL for a Salesforce account, obtained from an external source
+    # * If _options_ contains the keys <tt>:token</tt> and <tt>:instance_url</tt>, those are assumed to be a valid OAuth2 token and instance URL for a Salesforce account, obtained from an external source. _options_ may also optionally contain the key <tt>:refresh_token</tt>
     #
     # Raises SalesForceError if an error occurs
     def authenticate(options = nil)
@@ -102,10 +104,12 @@ module Databasedotcom
           @user_id = options["extra"]["user_hash"]["user_id"] rescue nil
           self.instance_url = options["credentials"]["instance_url"]
           self.oauth_token = options["credentials"]["token"]
+          self.refresh_token = options["credentials"]["refresh_token"]
         else
           raise ArgumentError unless options.has_key?(:token) && options.has_key?(:instance_url)
           self.instance_url = options[:instance_url]
           self.oauth_token = options[:token]
+          self.refresh_token = options[:refresh_token]
         end
       end
 
@@ -324,12 +328,25 @@ module Databasedotcom
 
     def ensure_expected_response(expected_result_class)
       yield.tap do |response|
+        unless response.is_a?(expected_result_class ||  Net::HTTPSuccess)
+          if response.is_a?(Net::HTTPUnauthorized) && self.refresh_token
+            with_encoded_path_and_checked_response("/services/oauth2/token", { :grant_type => "refresh_token", :refresh_token => self.refresh_token, :client_id => self.client_id, :client_secret => self.client_secret}) do |encoded_path|
+              response = https_request(self.host).post(encoded_path, nil)
+              response
+            end
+
+            if response.is_a?(Net::HTTPSuccess)
+              response = yield 
+            end
+          end
+        end
+        
         raise SalesForceError.new(response) unless response.is_a?(expected_result_class ||  Net::HTTPSuccess) 
       end
     end
 
-    def https_request
-      Net::HTTP.new(URI.parse(self.instance_url).host, 443).tap{|n| n.use_ssl = true }
+    def https_request(host=nil)
+      Net::HTTP.new(host || URI.parse(self.instance_url).host, 443).tap{|n| n.use_ssl = true }
     end
 
     def encode_path_with_params(path, parameters={})

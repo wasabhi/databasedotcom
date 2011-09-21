@@ -127,7 +127,7 @@ describe Databasedotcom::Client do
       @client.debugging = false
     end
 
-    it "defaults to 22.0" do
+    it "defaults to version 22.0" do
       @client.version = nil
 
       response_body = File.read(File.join(File.dirname(__FILE__), '..', "fixtures/auth_success_response.json"))
@@ -200,6 +200,11 @@ describe Databasedotcom::Client do
         @client.authenticate(@response)
         @client.instance_url.should == "https://na1.salesforce.com"
       end
+      
+      it "remembers the refresh token" do
+        @client.authenticate(@response)
+        @client.refresh_token.should == "refresh_token"
+      end        
 
       it "returns the token" do
         @client.authenticate(@response).should == "access_token"
@@ -216,6 +221,11 @@ describe Databasedotcom::Client do
         it "sets the instance url" do
           @client.authenticate(:token => "obtained_access_token", :instance_url => "https://na1.salesforce.com")
           @client.instance_url.should == "https://na1.salesforce.com"
+        end
+        
+        it "sets the refresh token" do
+          @client.authenticate(:token => "obtained_access_token", :instance_url => "https://na1.salesforce.com", :refresh_token => "refresh_token")
+          @client.refresh_token.should == "refresh_token"
         end
 
         it "returns the token" do
@@ -938,6 +948,8 @@ describe Databasedotcom::Client do
           @client.http_get("/my/path", nil, {"Something" => "Header"})
         }.should raise_error(Databasedotcom::SalesForceError)
       end
+      
+      it_should_behave_like "a request that can refresh the oauth token", :get, "get", "https://na1.salesforce.com/my/path", 200
     end
 
     describe "#http_delete" do
@@ -965,6 +977,8 @@ describe Databasedotcom::Client do
           @client.http_delete("/my/path")
         }.should raise_error(Databasedotcom::SalesForceError)
       end
+
+      it_should_behave_like "a request that can refresh the oauth token", :delete, "delete", "https://na1.salesforce.com/my/path", 204
     end
 
     describe "#http_post" do
@@ -992,6 +1006,8 @@ describe Databasedotcom::Client do
           @client.http_post("/my/path", "data", nil, {"Something" => "Header"})
         }.should raise_error(Databasedotcom::SalesForceError)
       end
+
+      it_should_behave_like "a request that can refresh the oauth token", :post, "post", "https://na1.salesforce.com/my/path", 201
     end
 
     describe "#http_multipart_post" do
@@ -1019,6 +1035,8 @@ describe Databasedotcom::Client do
           @client.http_multipart_post("/my/path", {}, {}, {"Something" => "Header"})
         }.should raise_error(Databasedotcom::SalesForceError)
       end
+
+      it_should_behave_like "a request that can refresh the oauth token", :post, "multipart_post", "https://na1.salesforce.com/my/path", 201
     end
 
     describe "#http_patch" do
