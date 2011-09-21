@@ -262,8 +262,8 @@ module Databasedotcom
     # +Authorization+ header is automatically included, as are any additional headers specified in _headers_.  Returns the HTTPResult if it is of type
     # HTTPSuccess- raises SalesForceError otherwise.
     def http_get(path, parameters={}, headers={})
-      with_request(path, {}, parameters, headers) do |req, encoded_path|
-        req.get(encoded_path, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
+      with_encoded_path_and_checked_response(path, parameters) do |encoded_path|
+        https_request.get(encoded_path, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
       end
     end
 
@@ -272,8 +272,8 @@ module Databasedotcom
     # +Authorization+ header is automatically included, as are any additional headers specified in _headers_.  Returns the HTTPResult if it is of type
     # HTTPSuccess- raises SalesForceError otherwise.
     def http_delete(path, parameters={}, headers={})
-      with_request(path, {:expected_result_class => Net::HTTPNoContent}, parameters, headers) do |req, encoded_path|
-        req.delete(encoded_path, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
+      with_encoded_path_and_checked_response(path, parameters, {:expected_result_class => Net::HTTPNoContent}) do |encoded_path|
+        https_request.delete(encoded_path, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
       end
     end
 
@@ -281,8 +281,8 @@ module Databasedotcom
     # Query parameters are included from _parameters_.  The required +Authorization+ header is automatically included, as are any additional
     # headers specified in _headers_.  Returns the HTTPResult if it is of type HTTPSuccess- raises SalesForceError otherwise.
     def http_post(path, data=nil, parameters={}, headers={})
-      with_request(path, {:data => data}, parameters, headers) do |req, encoded_path|
-        req.post(encoded_path, data, {"Content-Type" => data ? "application/json" : "text/plain", "Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
+      with_encoded_path_and_checked_response(path, parameters, {:data => data}) do |encoded_path|
+        https_request.post(encoded_path, data, {"Content-Type" => data ? "application/json" : "text/plain", "Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
       end
     end
 
@@ -290,8 +290,8 @@ module Databasedotcom
     # Query parameters are included from _parameters_.  The required +Authorization+ header is automatically included, as are any additional
     # headers specified in _headers_.  Returns the HTTPResult if it is of type HTTPSuccess- raises SalesForceError otherwise.
     def http_patch(path, data=nil, parameters={}, headers={})
-      with_request(path, {:data => data}, parameters, headers) do |req, encoded_path|
-        req.send_request("PATCH", encoded_path, data, {"Content-Type" => data ? "application/json" : "text/plain", "Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
+      with_encoded_path_and_checked_response(path, parameters, {:data => data}) do |encoded_path|
+        https_request.send_request("PATCH", encoded_path, data, {"Content-Type" => data ? "application/json" : "text/plain", "Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
       end
     end
 
@@ -300,33 +300,44 @@ module Databasedotcom
     # +Authorization+ header is automatically included, as are any additional headers specified in _headers_.
     # Returns the HTTPResult if it is of type HTTPSuccess- raises SalesForceError otherwise.
     def http_multipart_post(path, parts, parameters={}, headers={})
-      with_request(path, {:parts => parts}, parameters, headers) do |req, encoded_path|
-        req.request(Net::HTTP::Post::Multipart.new(encoded_path, parts, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers)))
+      with_encoded_path_and_checked_response(path, parameters) do |encoded_path|
+        https_request.request(Net::HTTP::Post::Multipart.new(encoded_path, parts, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers)))
       end
     end
 
     private
 
-    def with_request(path, opts = {}, parameters={}, headers={})
-      encoded_path = prepare_encoded_path_from(path, parameters)
-      log_request(encoded_path, opts[:data])
-      result = yield(secure_instance_url_request, encoded_path)
-      log_response(result)
-      ensure_result_is_as_expected(result, opts[:expected_result_class])
-      result
+    def with_encoded_path_and_checked_response(path, parameters, opts = {})
+      ensure_expected_response(opts[:expected_result_class]) do
+        with_logging(encode_path_with_params(path, parameters), opts[:data]) do |encoded_path|
+          yield(encoded_path)
+        end
+      end
     end
 
-    def ensure_result_is_as_expected(result, expted_result_class)
-      raise SalesForceError.new(result) unless result.is_a?(expted_result_class ||  Net::HTTPSuccess)
+    def with_logging(encoded_path, optional_data = nil)
+      log_request(encoded_path, optional_data)
+      response = yield encoded_path
+      log_response(response)
+      response
     end
 
-    def secure_instance_url_request
+    def ensure_expected_response(expected_result_class)
+      yield.tap do |response|
+        raise SalesForceError.new(response) unless response.is_a?(expected_result_class ||  Net::HTTPSuccess) 
+      end
+    end
+
+    def https_request
       Net::HTTP.new(URI.parse(self.instance_url).host, 443).tap{|n| n.use_ssl = true }
     end
 
-    def prepare_encoded_path_from(path, parameters={})
-      path_parameters = (parameters || {}).collect { |k, v| "#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}" }.join('&')
-      [URI.escape(path), path_parameters.empty? ? nil : path_parameters].compact.join('?')
+    def encode_path_with_params(path, parameters={})
+      [URI.escape(path), encode_parameters(parameters)].reject{|el| el.empty?}.join('?')
+    end
+
+    def encode_parameters(parameters={})
+      (parameters || {}).collect { |k, v| "#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}" }.join('&')
     end
 
     def log_request(path, data=nil)
