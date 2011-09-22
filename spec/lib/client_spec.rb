@@ -170,6 +170,12 @@ describe Databasedotcom::Client do
         it "returns the token" do
           @client.authenticate(:username => "username", :password => "password").should == "access_token"
         end
+        
+        it "sets username and password" do
+          @client.authenticate(:username => "username", :password => "password")
+          @client.username.should == "username"
+          @client.password.should == "password"
+        end
       end
 
       context "with an error response" do

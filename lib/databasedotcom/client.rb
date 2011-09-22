@@ -95,6 +95,8 @@ module Databasedotcom
         result = req.post(path, "")
         log_response(result)
         raise SalesForceError.new(result) unless result.is_a?(Net::HTTPOK)
+        self.username = user
+        self.password = pass
         parse_auth_response(result.body)
       elsif options.is_a?(Hash)
         if options.has_key?("provider")
