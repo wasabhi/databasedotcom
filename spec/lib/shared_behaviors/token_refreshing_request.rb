@@ -9,6 +9,10 @@ shared_examples_for("a request that can refresh the oauth token") do |request_me
         @client.refresh_token = "refresh"
       end
       
+      after do
+        @client.refresh_token = nil
+      end
+      
       context "when the refresh token flow succeeds" do
         before do
           response_body = File.read(File.join(File.dirname(__FILE__), "../../fixtures/refresh_success_response.json"))
@@ -40,7 +44,48 @@ shared_examples_for("a request that can refresh the oauth token") do |request_me
       end
     end
     
-    context "without a refresh token" do
+    context "with a username and password" do
+      before do
+        @client.username = "username"
+        @client.password = "password"
+      end
+      
+      after do
+        @client.username = @client.password = nil
+      end
+      
+      context "when reauthentication succeeds" do
+        before do
+          response_body = File.read(File.join(File.dirname(__FILE__), "../../fixtures/reauth_success_response.json"))
+          stub_request(:post, "https://bro.baz/services/oauth2/token?client_id=client_id&client_secret=client_secret&grant_type=password&username=username&password=password").to_return(:body => response_body, :status => 200)
+        end
+        
+        it "stores the new access token" do
+          @client.send("http_#{request_method_name}", URI.parse(request_url).path, {})
+          @client.oauth_token.should == "new_access_token"
+        end
+        
+        it "retries the request" do
+          @client.send("http_#{request_method_name}", URI.parse(request_url).path, {})
+          WebMock.should have_requested(request_method, request_url).twice
+        end
+      end
+      
+      context "when reauthentication fails" do
+        before do
+          response_body = File.read(File.join(File.dirname(__FILE__), "../../fixtures/auth_error_response.json"))
+          stub_request(:post, "https://bro.baz/services/oauth2/token?client_id=client_id&client_secret=client_secret&grant_type=password&username=username&password=password").to_return(:body => response_body, :status => 400)
+        end
+        
+        it "raises SalesForceError" do
+          lambda {
+            @client.send("http_#{request_method_name}", URI.parse(request_url).path, {})
+          }.should raise_error(Databasedotcom::SalesForceError)
+        end
+      end
+    end
+    
+    context "without a refresh token or username/password" do
       it "raises SalesForceError" do
         lambda {
           @client.send("http_#{request_method_name}", URI.parse(request_url).path, {})
