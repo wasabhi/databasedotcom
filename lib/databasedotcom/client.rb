@@ -412,24 +412,42 @@ module Databasedotcom
 
     def collection_from(response)
       response = JSON.parse(response)
-      array_response = response.is_a?(Array)
+      collection_from_hash( response )
+    end
+    
+    # Converts a Hash of object data into a concrete SObject
+    def record_from_hash(data)
+      attributes = data.delete('attributes')
+      new_record = find_or_materialize(attributes["type"]).new
+      data.each do |name, value|
+        field = new_record.description['fields'].find do |field|
+          key_from_label(field["label"]) == name || field["name"] == name || field["relationshipName"] == name
+        end
+      
+        # If reference/lookup field data was fetched, recursively build the child record and apply
+        if value.is_a?(Hash) and field['type'] == 'reference'
+          relation = record_from_hash( value )
+          set_value( new_record, field["relationshipName"], relation, 'reference' )
+        
+        # Apply the raw value for all other field types
+        else
+          set_value(new_record, field["name"], value, field["type"]) if field
+        end
+      end
+      new_record
+    end
+    
+    def collection_from_hash(data)      
+      array_response = data.is_a?(Array)
       if array_response
-        records = response.collect { |rec| self.find(rec["attributes"]["type"], rec["Id"]) }
+        records = data.collect { |rec| self.find(rec["attributes"]["type"], rec["Id"]) }
       else
-        records = response["records"].collect do |record|
-          attributes = record.delete('attributes')
-          new_record = find_or_materialize(attributes["type"]).new
-          record.each do |name, value|
-            field = new_record.description['fields'].find do |field|
-              key_from_label(field["label"]) == name || field["name"] == name
-            end
-            set_value(new_record, field["name"], value, field["type"]) if field
-          end
-          new_record
+        records = data["records"].collect do |record|
+          record_from_hash( record )          
         end
       end
 
-      Databasedotcom::Collection.new(self, array_response ? records.length : response["totalSize"], array_response ? nil : response["nextRecordsUrl"]).concat(records)
+      Databasedotcom::Collection.new(self, array_response ? records.length : data["totalSize"], array_response ? nil : data["nextRecordsUrl"]).concat(records)
     end
 
     def set_value(record, attr, value, attr_type)

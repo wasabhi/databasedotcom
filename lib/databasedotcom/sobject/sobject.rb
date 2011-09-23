@@ -130,6 +130,17 @@ module Databasedotcom
         self.description["fields"].collect { |f| f["name"] }
       end
 
+      def self.register_field( name, field )
+        attr_accessor name.to_sym
+        self.type_map[name] = {
+          :type => field["type"],
+          :label => field["label"],
+          :picklist_values => field["picklistValues"],
+          :updateable? => field["updateable"],
+          :createable? => field["createable"]
+        }
+      end
+
       # Materializes the dynamically created Sobject class by adding all attribute accessors for each field as described in the description of the object on Force.com
       def self.materialize(sobject_name)
         self.cattr_accessor :description
@@ -139,16 +150,18 @@ module Databasedotcom
         self.sobject_name = sobject_name
         self.description = self.client.describe_sobject(self.sobject_name)
         self.type_map = {}
+        
         self.description["fields"].each do |field|
+          
+          # Register normal fields
           name = field["name"]
-          attr_accessor name.to_sym
-          self.type_map[name] = {
-            :type => field["type"],
-            :label => field["label"],
-            :picklist_values => field["picklistValues"],
-            :updateable? => field["updateable"],
-            :createable? => field["createable"]
-          }
+          register_field( field["name"], field )
+          
+          # Register relationship fields.
+          if( field["type"] == "reference" )
+            register_field( field["relationshipName"], field )
+          end
+          
         end
       end
 
