@@ -30,8 +30,8 @@ describe Databasedotcom::Sobject::Sobject do
 
         describe ".attributes" do
           it "returns the attributes for this Sobject" do
-            TestClass.attributes.should_not be_nil
-            TestClass.attributes.should =~ response["fields"].collect { |f| f["name"] }
+            TestClass.attributes.should_not be_nil            
+            TestClass.attributes.should =~ response["fields"].collect { |f| [f["name"], f["relationshipName"]] }.flatten.compact
           end
         end
 

@@ -127,7 +127,7 @@ module Databasedotcom
       #    client.materialize("Car")
       #    Car.attributes               #=> ["Id", "Name", "Color", "Year"]
       def self.attributes
-        self.description["fields"].collect { |f| f["name"] }
+        self.description["fields"].collect { |f| [f["name"], f["relationshipName"]] }.flatten.compact
       end
 
       def self.register_field( name, field )
