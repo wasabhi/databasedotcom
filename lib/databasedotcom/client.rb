@@ -310,51 +310,53 @@ module Databasedotcom
 
     private
 
-    def with_encoded_path_and_checked_response(path, parameters, opts = {})
-      ensure_expected_response(opts[:expected_result_class]) do
-        with_logging(encode_path_with_params(path, parameters), opts[:data]) do |encoded_path|
+    def with_encoded_path_and_checked_response(path, parameters, options = {})
+      ensure_expected_response(options[:expected_result_class]) do
+        with_logging(encode_path_with_params(path, parameters), options) do |encoded_path|
           yield(encoded_path)
         end
       end
     end
 
-    def with_logging(encoded_path, optional_data = nil)
-      log_request(encoded_path, optional_data)
+    def with_logging(encoded_path, options)
+      log_request(encoded_path, options)
       response = yield encoded_path
       log_response(response)
       response
     end
 
     def ensure_expected_response(expected_result_class)
-      yield.tap do |response|
-        unless response.is_a?(expected_result_class ||  Net::HTTPSuccess)
-          if response.is_a?(Net::HTTPUnauthorized)
-            if self.refresh_token
-              with_encoded_path_and_checked_response("/services/oauth2/token", { :grant_type => "refresh_token", :refresh_token => self.refresh_token, :client_id => self.client_id, :client_secret => self.client_secret}) do |encoded_path|
-                response = https_request(self.host).post(encoded_path, nil)
-                if response.is_a?(Net::HTTPOK)
-                  parse_auth_response(response.body)
-                end
-                response
+      response = yield
+      
+      unless response.is_a?(expected_result_class || Net::HTTPSuccess)
+        if response.is_a?(Net::HTTPUnauthorized)
+          if self.refresh_token
+            response = with_encoded_path_and_checked_response("/services/oauth2/token", { :grant_type => "refresh_token", :refresh_token => self.refresh_token, :client_id => self.client_id, :client_secret => self.client_secret}, :host => self.host) do |encoded_path|
+              response = https_request(self.host).post(encoded_path, nil)
+              if response.is_a?(Net::HTTPOK)
+                parse_auth_response(response.body)
               end
-            elsif self.username && self.password
-              with_encoded_path_and_checked_response("/services/oauth2/token", { :grant_type => "password", :username => self.username, :password => self.password, :client_id => self.client_id, :client_secret => self.client_secret}) do |encoded_path|
-                response = https_request(self.host).post(encoded_path, nil)
-                if response.is_a?(Net::HTTPOK)
-                  parse_auth_response(response.body)
-                end
-                response
-              end
+              response
             end
+          elsif self.username && self.password
+            response = with_encoded_path_and_checked_response("/services/oauth2/token", { :grant_type => "password", :username => self.username, :password => self.password, :client_id => self.client_id, :client_secret => self.client_secret}, :host => self.host) do |encoded_path|
+              response = https_request(self.host).post(encoded_path, nil)
+              if response.is_a?(Net::HTTPOK)
+                parse_auth_response(response.body)
+              end
+              response
+            end
+          end
 
-            if response.is_a?(Net::HTTPSuccess)
-              response = yield 
-            end
+          if response.is_a?(Net::HTTPSuccess)
+            response = yield 
           end
         end
         
         raise SalesForceError.new(response) unless response.is_a?(expected_result_class ||  Net::HTTPSuccess) 
       end
+      
+      response
     end
 
     def https_request(host=nil)
@@ -369,8 +371,9 @@ module Databasedotcom
       (parameters || {}).collect { |k, v| "#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}" }.join('&')
     end
 
-    def log_request(path, data=nil)
-      puts "***** REQUEST: #{path.include?(':') ? path : URI.join(self.instance_url, path)}#{data ? " => #{data}" : ''}" if self.debugging
+    def log_request(path, options={})
+      base_url = options[:host] ? "https://#{options[:host]}" : self.instance_url
+      puts "***** REQUEST: #{path.include?(':') ? path : URI.join(base_url, path)}#{options[:data] ? " => #{options[:data]}" : ''}" if self.debugging
     end
 
     def log_response(result)
