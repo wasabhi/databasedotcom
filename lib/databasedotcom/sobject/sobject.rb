@@ -158,7 +158,7 @@ module Databasedotcom
           register_field( field["name"], field )
           
           # Register relationship fields.
-          if( field["type"] == "reference" )
+          if( field["type"] == "reference" and field["relationshipName"] )
             register_field( field["relationshipName"], field )
           end
           

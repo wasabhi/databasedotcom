@@ -425,7 +425,7 @@ module Databasedotcom
         end
       
         # If reference/lookup field data was fetched, recursively build the child record and apply
-        if value.is_a?(Hash) and field['type'] == 'reference'
+        if value.is_a?(Hash) and field['type'] == 'reference' and field["relationshipName"]
           relation = record_from_hash( value )
           set_value( new_record, field["relationshipName"], relation, 'reference' )
         
