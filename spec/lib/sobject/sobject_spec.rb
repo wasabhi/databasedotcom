@@ -192,9 +192,26 @@ describe Databasedotcom::Sobject::Sobject do
             TestClass.find_by_Name('Richard').should == "bar"
           end
           
-          it "coerces types" do
+          it "handles boolean values" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE IsDeleted = false LIMIT 1").and_return(["bar"])
             TestClass.find_by_IsDeleted(false).should == "bar"
+          end
+          
+          it "handles numeric values" do
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Number_Field = 23.4 LIMIT 1").and_return(["bar"])
+            TestClass.find_by_Number_Field(23.4).should == "bar"
+          end
+          
+          it "handles date values" do
+            today = Date.today
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_FIeld = #{today.to_s} LIMIT 1").and_return(["bar"])
+            TestClass.find_by_Date_FIeld(today).should == "bar"
+          end
+          
+          it "handles datetime values" do
+            now = Time.now
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")} LIMIT 1").and_return(["bar"])
+            TestClass.find_by_DateTime_Field(now).should == "bar"
           end
         end
 
@@ -202,15 +219,6 @@ describe Databasedotcom::Sobject::Sobject do
           it "constructs and executes a query matching the dynamic attributes" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND City = 'San Francisco' LIMIT 1").and_return(["bar"])
             TestClass.find_by_Name_and_City('Richard', 'San Francisco').should == "bar"
-          end
-          
-          it "coerces types" do
-            today = Date.today
-            Date.stub(:today).and_return(today)
-            now = DateTime.now
-            DateTime.stub(:now).and_return(now)
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND IsDeleted = false AND NumberField = 23.4 AND DateField = #{today.to_s} AND DateTimeField = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")} LIMIT 1").and_return(["bar"])
-            TestClass.find_by_Name_and_IsDeleted_and_NumberField_and_DateField_and_DateTimeField('Richard', false, 23.4, today, now).should == "bar"
           end
         end
       end
@@ -222,9 +230,26 @@ describe Databasedotcom::Sobject::Sobject do
             TestClass.find_all_by_Name('Richard').should == ["bar"]
           end
           
-          it "coerces types" do
+          it "handles boolean values" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE IsDeleted = false").and_return(["bar"])
             TestClass.find_all_by_IsDeleted(false).should == ["bar"]
+          end
+          
+          it "handles numeric values" do
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Number_Field = 23.4").and_return(["bar"])
+            TestClass.find_all_by_Number_Field(23.4).should == ["bar"]
+          end
+          
+          it "handles date values" do
+            today = Date.today
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_FIeld = #{today.to_s}").and_return(["bar"])
+            TestClass.find_all_by_Date_FIeld(today).should == ["bar"]
+          end
+          
+          it "handles datetime values" do
+            now = Time.now
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")}").and_return(["bar"])
+            TestClass.find_all_by_DateTime_Field(now).should == ["bar"]
           end
         end
 
@@ -232,15 +257,6 @@ describe Databasedotcom::Sobject::Sobject do
           it "constructs and executes a query matching the dynamic attributes" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND City = 'San Francisco'").and_return(["bar"])
             TestClass.find_all_by_Name_and_City('Richard', 'San Francisco').should == ["bar"]
-          end
-          
-          it "coerces types" do
-            today = Date.today
-            Date.stub(:today).and_return(today)
-            now = DateTime.now
-            DateTime.stub(:now).and_return(now)
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND IsDeleted = false AND NumberField = 23.4 AND DateField = #{today.to_s} AND DateTimeField = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")}").and_return(["bar"])
-            TestClass.find_all_by_Name_and_IsDeleted_and_NumberField_and_DateField_and_DateTimeField('Richard', false, 23.4, today, now).should == ["bar"]
           end
         end
       end
@@ -255,10 +271,30 @@ describe Databasedotcom::Sobject::Sobject do
             TestClass.find_or_create_by_Name('Richard').should == "gar"
           end
           
-          it "coerces types" do
+          it "handles boolean values" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE IsDeleted = false LIMIT 1").and_return(nil)
             @client.should_receive(:create).with(TestClass, "IsDeleted" => false).and_return("gar")
             TestClass.find_or_create_by_IsDeleted(false).should == "gar"
+          end
+          
+          it "handles numeric values" do
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Number_Field = 23.4 LIMIT 1").and_return(nil)
+            @client.should_receive(:create).with(TestClass, "Number_Field" => 23.4).and_return("gar")
+            TestClass.find_or_create_by_Number_Field(23.4).should == "gar"
+          end
+          
+          it "handles date values" do
+            today = Date.today
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_FIeld = #{today.to_s} LIMIT 1").and_return(nil)
+            @client.should_receive(:create).with(TestClass, "Date_FIeld" => today).and_return("gar")
+            TestClass.find_or_create_by_Date_FIeld(today).should == "gar"
+          end
+          
+          it "handles datetime values" do
+            now = Time.now
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")} LIMIT 1").and_return(nil)
+            @client.should_receive(:create).with(TestClass, "DateTime_Field" => now).and_return("gar")
+            TestClass.find_or_create_by_DateTime_Field(now).should == "gar"
           end
         end
 
@@ -267,12 +303,6 @@ describe Databasedotcom::Sobject::Sobject do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND City = 'San Francisco' LIMIT 1").and_return(nil)
             @client.should_receive(:create).with(TestClass, {"Name" => "Richard", "City" => "San Francisco"}).and_return("bar")
             TestClass.find_or_create_by_Name_and_City('Richard', 'San Francisco').should == "bar"
-          end
-          
-          it "coerces types" do
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND IsDeleted = false LIMIT 1").and_return(nil)
-            @client.should_receive(:create).with(TestClass, "Name" => "Richard", "IsDeleted" => false).and_return("gar")
-            TestClass.find_or_create_by_Name_and_IsDeleted("Richard", false).should == "gar"
           end
         end
 
@@ -294,9 +324,26 @@ describe Databasedotcom::Sobject::Sobject do
             TestClass.find_or_initialize_by_Name('Richard').Name.should == "Richard"
           end
           
-          it "coerces types" do
+          it "handles boolean values" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE IsDeleted = false LIMIT 1").and_return(nil)
             TestClass.find_or_initialize_by_IsDeleted(false).IsDeleted.should be_false
+          end
+          
+          it "handles numeric values" do
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Number_Field = 23.4 LIMIT 1").and_return(nil)
+            TestClass.find_or_initialize_by_Number_Field(23.4).Number_Field.should == 23.4
+          end
+          
+          it "handles date values" do
+            today = Date.today
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_Field = #{today.to_s} LIMIT 1").and_return(nil)
+            TestClass.find_or_initialize_by_Date_Field(today).Date_Field.should == today
+          end
+          
+          it "handles datetime values" do
+            now = Time.now
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")} LIMIT 1").and_return(nil)
+            TestClass.find_or_initialize_by_DateTime_Field(now).DateTime_Field.should == now
           end
         end
 
@@ -306,13 +353,6 @@ describe Databasedotcom::Sobject::Sobject do
             result = TestClass.find_or_initialize_by_Name_and_Email_Field('Richard', 'fake@email.com')
             result.Name.should == "Richard"
             result.Email_Field.should == "fake@email.com"
-          end
-          
-          it "coerces types" do
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND IsDeleted = false LIMIT 1").and_return(nil)
-            result = TestClass.find_or_initialize_by_Name_and_IsDeleted('Richard', false)
-            result.Name.should == "Richard"
-            result.IsDeleted.should be_false
           end
         end
 
