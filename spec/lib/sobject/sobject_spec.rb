@@ -217,7 +217,12 @@ describe Databasedotcom::Sobject::Sobject do
 
         context "with multiple attributes" do
           it "constructs and executes a query matching the dynamic attributes" do
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND City = 'San Francisco' LIMIT 1").and_return(["bar"])
+            @client.should_receive(:query) do |query|
+              query.should include("Name = 'Richard'")
+              query.should include("City = 'San Francisco'")
+              query.should include(" LIMIT 1")
+              ["bar"]
+            end
             TestClass.find_by_Name_and_City('Richard', 'San Francisco').should == "bar"
           end
         end
@@ -255,7 +260,11 @@ describe Databasedotcom::Sobject::Sobject do
 
         context "with multiple attributes" do
           it "constructs and executes a query matching the dynamic attributes" do
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND City = 'San Francisco'").and_return(["bar"])
+            @client.should_receive(:query) do |query|
+              query.should include("Name = 'Richard'")
+              query.should include("City = 'San Francisco'")
+              ["bar"]
+            end
             TestClass.find_all_by_Name_and_City('Richard', 'San Francisco').should == ["bar"]
           end
         end
@@ -300,7 +309,12 @@ describe Databasedotcom::Sobject::Sobject do
 
         context "with multiple attributes" do
           it "searches for a record with the specified attributes and creates it if it doesn't exist" do
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND City = 'San Francisco' LIMIT 1").and_return(nil)
+            @client.should_receive(:query) do |query|
+              query.should include("Name = 'Richard'")
+              query.should include("City = 'San Francisco'")
+              query.should include(" LIMIT 1")
+              nil
+            end
             @client.should_receive(:create).with(TestClass, {"Name" => "Richard", "City" => "San Francisco"}).and_return("bar")
             TestClass.find_or_create_by_Name_and_City('Richard', 'San Francisco').should == "bar"
           end
