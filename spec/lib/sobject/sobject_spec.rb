@@ -191,6 +191,11 @@ describe Databasedotcom::Sobject::Sobject do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' LIMIT 1").and_return(["bar"])
             TestClass.find_by_Name('Richard').should == "bar"
           end
+          
+          it "coerces types" do
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE IsDeleted = false LIMIT 1").and_return(["bar"])
+            TestClass.find_by_IsDeleted(false).should == "bar"
+          end
         end
 
         context "with multiple attributes" do
@@ -198,21 +203,44 @@ describe Databasedotcom::Sobject::Sobject do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND City = 'San Francisco' LIMIT 1").and_return(["bar"])
             TestClass.find_by_Name_and_City('Richard', 'San Francisco').should == "bar"
           end
+          
+          it "coerces types" do
+            today = Date.today
+            Date.stub(:today).and_return(today)
+            now = DateTime.now
+            DateTime.stub(:now).and_return(now)
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND IsDeleted = false AND NumberField = 23.4 AND DateField = #{today.to_s} AND DateTimeField = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")} LIMIT 1").and_return(["bar"])
+            TestClass.find_by_Name_and_IsDeleted_and_NumberField_and_DateField_and_DateTimeField('Richard', false, 23.4, today, now).should == "bar"
+          end
         end
       end
 
       describe "find_all_by_xxx" do
         context "with a single attribute" do
           it "constructs and executes a query matching the dynamic attributes" do
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard'").and_return("bar")
-            TestClass.find_all_by_Name('Richard').should == "bar"
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard'").and_return(["bar"])
+            TestClass.find_all_by_Name('Richard').should == ["bar"]
+          end
+          
+          it "coerces types" do
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE IsDeleted = false").and_return(["bar"])
+            TestClass.find_all_by_IsDeleted(false).should == ["bar"]
           end
         end
 
         context "with multiple attributes" do
           it "constructs and executes a query matching the dynamic attributes" do
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND City = 'San Francisco'").and_return("bar")
-            TestClass.find_all_by_Name_and_City('Richard', 'San Francisco').should == "bar"
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND City = 'San Francisco'").and_return(["bar"])
+            TestClass.find_all_by_Name_and_City('Richard', 'San Francisco').should == ["bar"]
+          end
+          
+          it "coerces types" do
+            today = Date.today
+            Date.stub(:today).and_return(today)
+            now = DateTime.now
+            DateTime.stub(:now).and_return(now)
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND IsDeleted = false AND NumberField = 23.4 AND DateField = #{today.to_s} AND DateTimeField = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")}").and_return(["bar"])
+            TestClass.find_all_by_Name_and_IsDeleted_and_NumberField_and_DateField_and_DateTimeField('Richard', false, 23.4, today, now).should == ["bar"]
           end
         end
       end
@@ -226,6 +254,12 @@ describe Databasedotcom::Sobject::Sobject do
             @client.should_receive(:create).with(TestClass, "Name" => "Richard").and_return("gar")
             TestClass.find_or_create_by_Name('Richard').should == "gar"
           end
+          
+          it "coerces types" do
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE IsDeleted = false LIMIT 1").and_return(nil)
+            @client.should_receive(:create).with(TestClass, "IsDeleted" => false).and_return("gar")
+            TestClass.find_or_create_by_IsDeleted(false).should == "gar"
+          end
         end
 
         context "with multiple attributes" do
@@ -234,13 +268,19 @@ describe Databasedotcom::Sobject::Sobject do
             @client.should_receive(:create).with(TestClass, {"Name" => "Richard", "City" => "San Francisco"}).and_return("bar")
             TestClass.find_or_create_by_Name_and_City('Richard', 'San Francisco').should == "bar"
           end
+          
+          it "coerces types" do
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND IsDeleted = false LIMIT 1").and_return(nil)
+            @client.should_receive(:create).with(TestClass, "Name" => "Richard", "IsDeleted" => false).and_return("gar")
+            TestClass.find_or_create_by_Name_and_IsDeleted("Richard", false).should == "gar"
+          end
         end
 
         context "with a hash argument containing additional attributes" do
           it "finds by the named arguments, but creates by all values in the hash" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' LIMIT 1").and_return(nil)
-            @client.should_receive(:create).with(TestClass, "Name" => "Richard", "Email_Field" => "foo@bar.com").and_return("gar")
-            TestClass.find_or_create_by_Name("Name" => 'Richard', "Email_Field" => "foo@bar.com").should == "gar"
+            @client.should_receive(:create).with(TestClass, "Name" => "Richard", "Email_Field" => "foo@bar.com", "IsDeleted" => false).and_return("gar")
+            TestClass.find_or_create_by_Name("Name" => 'Richard', "Email_Field" => "foo@bar.com", "IsDeleted" => false).should == "gar"
           end
         end
       end
@@ -253,6 +293,11 @@ describe Databasedotcom::Sobject::Sobject do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' LIMIT 1").and_return(nil)
             TestClass.find_or_initialize_by_Name('Richard').Name.should == "Richard"
           end
+          
+          it "coerces types" do
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE IsDeleted = false LIMIT 1").and_return(nil)
+            TestClass.find_or_initialize_by_IsDeleted(false).IsDeleted.should be_false
+          end
         end
 
         context "with multiple attributes" do
@@ -262,14 +307,22 @@ describe Databasedotcom::Sobject::Sobject do
             result.Name.should == "Richard"
             result.Email_Field.should == "fake@email.com"
           end
+          
+          it "coerces types" do
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND IsDeleted = false LIMIT 1").and_return(nil)
+            result = TestClass.find_or_initialize_by_Name_and_IsDeleted('Richard', false)
+            result.Name.should == "Richard"
+            result.IsDeleted.should be_false
+          end
         end
 
         context "with a hash argument containing additional attributes" do
           it "finds by the named arguments, but initializes by all values in the hash" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' LIMIT 1").and_return(nil)
-            result = TestClass.find_or_initialize_by_Name("Name" => 'Richard', "Email_Field" => "foo@bar.com")
+            result = TestClass.find_or_initialize_by_Name("Name" => 'Richard', "Email_Field" => "foo@bar.com", "IsDeleted" => false)
             result.Name.should == "Richard"
             result.Email_Field.should == "foo@bar.com"
+            result.IsDeleted.should be_false
           end
         end
       end

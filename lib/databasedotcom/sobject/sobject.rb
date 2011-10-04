@@ -236,19 +236,19 @@ module Databasedotcom
       def self.method_missing(method_name, *args, &block)
         if method_name.to_s =~ /^find_(or_create_|or_initialize_)?by_(.+)$/ || method_name.to_s =~ /^find_(all_)by_(.+)$/
           named_attrs = $2.split('_and_')
-          attrs_and_values_for_find = []
+          attrs_and_values_for_find = {}
           hash_args = args.length == 1 && args[0].is_a?(Hash)
           attrs_and_values_for_write = hash_args ? args[0] : {}
 
           named_attrs.each_with_index do |attr, index|
             value = hash_args ? args[0][attr] : args[index]
-            attrs_and_values_for_find << "#{attr} = '#{value}'"
+            attrs_and_values_for_find[attr] = value
             attrs_and_values_for_write[attr] = value unless hash_args
           end
 
           limit_clause = method_name.to_s.include?('_all_by_') ? "" : " LIMIT 1"
-
-          results = self.client.query("SELECT #{self.field_list} FROM #{self.sobject_name} WHERE #{attrs_and_values_for_find.join(' AND ')}#{limit_clause}")
+          
+          results = self.client.query("SELECT #{self.field_list} FROM #{self.sobject_name} WHERE #{soql_conditions_for(attrs_and_values_for_find)}#{limit_clause}")
           results = limit_clause == "" ? results : results.first rescue nil
 
           if results.nil?
@@ -297,6 +297,22 @@ module Databasedotcom
       def self.type_map_attr(attr_name, key)
         raise ArgumentError.new("No attribute named #{attr_name}") unless self.type_map.has_key?(attr_name)
         self.type_map[attr_name][key]
+      end
+      
+      def self.soql_conditions_for(params)
+        params.inject([]) do |arr, av|
+          case av[1]
+            when String
+              value_str = "'#{av[1]}'"
+            when DateTime, Time
+              value_str = av[1].strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")
+            else
+              value_str = av[1].to_s
+          end
+          
+          arr << "#{av[0]} = #{value_str}"
+          arr
+        end.join(" AND ")
       end
     end
   end
