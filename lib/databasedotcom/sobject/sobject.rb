@@ -303,7 +303,7 @@ module Databasedotcom
         params.inject([]) do |arr, av|
           case av[1]
             when String
-              value_str = "'#{av[1]}'"
+              value_str = "'#{av[1].gsub("'", "\\\\'")}'"
             when DateTime, Time
               value_str = av[1].strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")
             else

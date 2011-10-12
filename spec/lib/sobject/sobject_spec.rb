@@ -213,6 +213,11 @@ describe Databasedotcom::Sobject::Sobject do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")} LIMIT 1").and_return(["bar"])
             TestClass.find_by_DateTime_Field(now).should == "bar"
           end
+          
+          it "escapes special characters" do
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'o\\'reilly' LIMIT 1").and_return(["bar"])
+            TestClass.find_by_Name("o'reilly").should == "bar"
+          end
         end
 
         context "with multiple attributes" do
@@ -255,6 +260,11 @@ describe Databasedotcom::Sobject::Sobject do
             now = Time.now
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")}").and_return(["bar"])
             TestClass.find_all_by_DateTime_Field(now).should == ["bar"]
+          end
+          
+          it "escapes special characters" do
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'o\\'reilly'").and_return(["bar"])
+            TestClass.find_all_by_Name("o'reilly").should == ["bar"]
           end
         end
 
@@ -304,6 +314,12 @@ describe Databasedotcom::Sobject::Sobject do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")} LIMIT 1").and_return(nil)
             @client.should_receive(:create).with(TestClass, "DateTime_Field" => now).and_return("gar")
             TestClass.find_or_create_by_DateTime_Field(now).should == "gar"
+          end
+          
+          it "escapes special characters" do
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'o\\'reilly' LIMIT 1").and_return(nil)
+            @client.should_receive(:create).with(TestClass, "Name" => "o'reilly").and_return("gar")
+            TestClass.find_or_create_by_Name("o'reilly").should == "gar"
           end
         end
 
@@ -358,6 +374,11 @@ describe Databasedotcom::Sobject::Sobject do
             now = Time.now
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")} LIMIT 1").and_return(nil)
             TestClass.find_or_initialize_by_DateTime_Field(now).DateTime_Field.should == now
+          end
+          
+          it "escapes special characters" do
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'o\\'reilly' LIMIT 1").and_return(nil)
+            TestClass.find_or_initialize_by_Name("o'reilly").Name.should == "o'reilly"
           end
         end
 
