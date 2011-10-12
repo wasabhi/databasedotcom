@@ -581,6 +581,12 @@ describe Databasedotcom::Client do
       end
 
       describe "#query" do
+        it "properly escapes query parameters" do
+          response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/query_empty_response.json"))
+          stub_request(:get, "https://na1.salesforce.com/services/data/v23.0/query?q=SELECT+Name+FROM+Whizbang+WHERE+Name='steve%20%26%20me%3F'").to_return(:body => response_body, :status => 200)
+          @client.query("SELECT Name FROM Whizbang WHERE Name='steve & me?'").should be_a_kind_of(Enumerable)
+        end
+        
         context "with results" do
           before do
             @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/query_success_response.json"))

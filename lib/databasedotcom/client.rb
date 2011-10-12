@@ -181,7 +181,7 @@ module Databasedotcom
     #
     #    client.query("SELECT Name FROM Account") #=> [#<Account @Id=nil, @Name="Foo", ...>, #<Account @Id=nil, @Name="Bar", ...> ...]
     def query(soql_expr)
-      result = http_get("/services/data/v#{self.version}/query?q=#{soql_expr}")
+      result = http_get("/services/data/v#{self.version}/query", :q => soql_expr)
       collection_from(result.body)
     end
 
@@ -189,7 +189,7 @@ module Databasedotcom
     #
     #    client.search("FIND {bar}") #=> [#<Account @Name="foobar", ...>, #<Account @Name="barfoo", ...> ...]
     def search(sosl_expr)
-      result = http_get("/services/data/v#{self.version}/search?q=#{sosl_expr}")
+      result = http_get("/services/data/v#{self.version}/search", :q => sosl_expr)
       collection_from(result.body)
     end
 
@@ -368,12 +368,16 @@ module Databasedotcom
     end
 
     def encode_parameters(parameters={})
-      (parameters || {}).collect { |k, v| "#{URI.escape(k.to_s)}=#{URI.escape(v.to_s)}" }.join('&')
+      (parameters || {}).collect { |k, v| "#{uri_escape(k)}=#{uri_escape(v)}" }.join('&')
     end
 
     def log_request(path, options={})
       base_url = options[:host] ? "https://#{options[:host]}" : self.instance_url
       puts "***** REQUEST: #{path.include?(':') ? path : URI.join(base_url, path)}#{options[:data] ? " => #{options[:data]}" : ''}" if self.debugging
+    end
+    
+    def uri_escape(str)
+      URI.escape(str.to_s, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]"))
     end
 
     def log_response(result)
