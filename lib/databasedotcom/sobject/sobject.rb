@@ -98,13 +98,14 @@ module Databasedotcom
         end
       end
 
-      # Reloads the record from the Force.com database. Returns the reloaded record.
+      # Reloads the record from the Force.com database. Returns self.
       #
       #    client.materialize("Car")
       #    c = Car.find_by_Color("Yellow")
       #    c.reload
       def reload
-        self.class.find(self.Id)
+        self.attributes = self.class.find(self.Id).attributes
+        self
       end
 
       def [](attr_name)

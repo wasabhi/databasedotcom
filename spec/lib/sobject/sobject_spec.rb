@@ -191,29 +191,29 @@ describe Databasedotcom::Sobject::Sobject do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' LIMIT 1").and_return(["bar"])
             TestClass.find_by_Name('Richard').should == "bar"
           end
-          
+
           it "handles boolean values" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE IsDeleted = false LIMIT 1").and_return(["bar"])
             TestClass.find_by_IsDeleted(false).should == "bar"
           end
-          
+
           it "handles numeric values" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Number_Field = 23.4 LIMIT 1").and_return(["bar"])
             TestClass.find_by_Number_Field(23.4).should == "bar"
           end
-          
+
           it "handles date values" do
             today = Date.today
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_FIeld = #{today.to_s} LIMIT 1").and_return(["bar"])
             TestClass.find_by_Date_FIeld(today).should == "bar"
           end
-          
+
           it "handles datetime values" do
             now = Time.now
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")} LIMIT 1").and_return(["bar"])
             TestClass.find_by_DateTime_Field(now).should == "bar"
           end
-          
+
           it "escapes special characters" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'o\\'reilly' LIMIT 1").and_return(["bar"])
             TestClass.find_by_Name("o'reilly").should == "bar"
@@ -239,29 +239,29 @@ describe Databasedotcom::Sobject::Sobject do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard'").and_return(["bar"])
             TestClass.find_all_by_Name('Richard').should == ["bar"]
           end
-          
+
           it "handles boolean values" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE IsDeleted = false").and_return(["bar"])
             TestClass.find_all_by_IsDeleted(false).should == ["bar"]
           end
-          
+
           it "handles numeric values" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Number_Field = 23.4").and_return(["bar"])
             TestClass.find_all_by_Number_Field(23.4).should == ["bar"]
           end
-          
+
           it "handles date values" do
             today = Date.today
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_FIeld = #{today.to_s}").and_return(["bar"])
             TestClass.find_all_by_Date_FIeld(today).should == ["bar"]
           end
-          
+
           it "handles datetime values" do
             now = Time.now
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")}").and_return(["bar"])
             TestClass.find_all_by_DateTime_Field(now).should == ["bar"]
           end
-          
+
           it "escapes special characters" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'o\\'reilly'").and_return(["bar"])
             TestClass.find_all_by_Name("o'reilly").should == ["bar"]
@@ -289,33 +289,33 @@ describe Databasedotcom::Sobject::Sobject do
             @client.should_receive(:create).with(TestClass, "Name" => "Richard").and_return("gar")
             TestClass.find_or_create_by_Name('Richard').should == "gar"
           end
-          
+
           it "handles boolean values" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE IsDeleted = false LIMIT 1").and_return(nil)
             @client.should_receive(:create).with(TestClass, "IsDeleted" => false).and_return("gar")
             TestClass.find_or_create_by_IsDeleted(false).should == "gar"
           end
-          
+
           it "handles numeric values" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Number_Field = 23.4 LIMIT 1").and_return(nil)
             @client.should_receive(:create).with(TestClass, "Number_Field" => 23.4).and_return("gar")
             TestClass.find_or_create_by_Number_Field(23.4).should == "gar"
           end
-          
+
           it "handles date values" do
             today = Date.today
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_FIeld = #{today.to_s} LIMIT 1").and_return(nil)
             @client.should_receive(:create).with(TestClass, "Date_FIeld" => today).and_return("gar")
             TestClass.find_or_create_by_Date_FIeld(today).should == "gar"
           end
-          
+
           it "handles datetime values" do
             now = Time.now
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")} LIMIT 1").and_return(nil)
             @client.should_receive(:create).with(TestClass, "DateTime_Field" => now).and_return("gar")
             TestClass.find_or_create_by_DateTime_Field(now).should == "gar"
           end
-          
+
           it "escapes special characters" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'o\\'reilly' LIMIT 1").and_return(nil)
             @client.should_receive(:create).with(TestClass, "Name" => "o'reilly").and_return("gar")
@@ -353,29 +353,29 @@ describe Databasedotcom::Sobject::Sobject do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' LIMIT 1").and_return(nil)
             TestClass.find_or_initialize_by_Name('Richard').Name.should == "Richard"
           end
-          
+
           it "handles boolean values" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE IsDeleted = false LIMIT 1").and_return(nil)
             TestClass.find_or_initialize_by_IsDeleted(false).IsDeleted.should be_false
           end
-          
+
           it "handles numeric values" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Number_Field = 23.4 LIMIT 1").and_return(nil)
             TestClass.find_or_initialize_by_Number_Field(23.4).Number_Field.should == 23.4
           end
-          
+
           it "handles date values" do
             today = Date.today
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_Field = #{today.to_s} LIMIT 1").and_return(nil)
             TestClass.find_or_initialize_by_Date_Field(today).Date_Field.should == today
           end
-          
+
           it "handles datetime values" do
             now = Time.now
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")} LIMIT 1").and_return(nil)
             TestClass.find_or_initialize_by_DateTime_Field(now).DateTime_Field.should == now
           end
-          
+
           it "escapes special characters" do
             @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'o\\'reilly' LIMIT 1").and_return(nil)
             TestClass.find_or_initialize_by_Name("o'reilly").Name.should == "o'reilly"
@@ -623,11 +623,31 @@ describe Databasedotcom::Sobject::Sobject do
     end
 
     describe "#reload" do
+      before do
+        Databasedotcom::Sobject::Sobject.should_receive(:find).with("foo").and_return(double("sobject", :attributes => { "Id" => "foo", "Name" => "James"}))
+      end
+      
       it "reloads the object" do
-        Databasedotcom::Sobject::Sobject.should_receive(:find).with("foo")
         obj = TestClass.new
         obj.Id = "foo"
         obj.reload
+      end
+
+      it "resets the object attributes" do
+        obj = TestClass.new
+        obj.Id = "foo"
+        obj.Name = "Jerry"
+        obj.reload
+        obj.Id.should == "foo"
+        obj.Name.should == "James"
+      end
+      
+      it "returns self" do
+        obj = TestClass.new
+        obj.Id = "foo"
+        obj.Name = "Jerry"
+        reloaded_obj = obj.reload
+        reloaded_obj.should == obj
       end
     end
   end
