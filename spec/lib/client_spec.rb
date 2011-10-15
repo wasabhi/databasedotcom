@@ -224,6 +224,12 @@ describe Databasedotcom::Client do
       it "returns the token" do
         @client.authenticate(@response).should == "access_token"
       end
+      
+      it "sets user id and org id" do
+        @client.authenticate(@response)
+        @client.org_id == @org_id
+        @client.user_id == @user_id
+      end
     end
 
     context "with a previously obtained access token" do
