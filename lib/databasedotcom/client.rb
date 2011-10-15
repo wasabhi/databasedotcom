@@ -29,6 +29,8 @@ module Databasedotcom
     attr_accessor :username
     # The SalesForce password
     attr_accessor :password
+    # The SalesForce organization id for the authenticated user's Salesforce instance
+    attr_accessor :org_id
 
     # Returns a new client object. _options_ can be one of the following
     #
@@ -472,6 +474,7 @@ module Databasedotcom
     def parse_auth_response(body)
       json = JSON.parse(body)
       @user_id = json["id"].match(/\/([^\/]+)$/)[1] rescue nil
+      @org_id = json["id"].match(/00D[^\/]{12}/)[0] rescue nil
       self.instance_url = json["instance_url"]
       self.oauth_token = json["access_token"]
     end

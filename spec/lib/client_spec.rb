@@ -126,6 +126,8 @@ describe Databasedotcom::Client do
       @client = Databasedotcom::Client.new(File.join(File.dirname(__FILE__), "../fixtures/databasedotcom.yml"))
       @client.debugging = false
       @access_token = "00Dx0000000BV7z!AR8AQAxo9UfVkh8AlV0Gomt9Czx9LjHnSSpwBMmbRcgKFmxOtvxjTrKW19ye6PE3Ds1eQz3z8jr3W7_VbWmEu4Q8TVGSTHxs"
+      @org_id = "00Dx0000000BV7z"
+      @user_id = "005x00000012Q9P"
     end
 
     it "defaults to version 22.0" do
@@ -176,6 +178,12 @@ describe Databasedotcom::Client do
           @client.authenticate(:username => "username", :password => "password")
           @client.username.should == "username"
           @client.password.should == "password"
+        end
+        
+        it "sets the user_id and org_id" do
+          @client.authenticate(:username => "username", :password => "password")
+          @client.user_id.should == @user_id
+          @client.org_id.should == @org_id
         end
       end
 
