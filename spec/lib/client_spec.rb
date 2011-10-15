@@ -125,6 +125,7 @@ describe Databasedotcom::Client do
     before do
       @client = Databasedotcom::Client.new(File.join(File.dirname(__FILE__), "../fixtures/databasedotcom.yml"))
       @client.debugging = false
+      @access_token = "00Dx0000000BV7z!AR8AQAxo9UfVkh8AlV0Gomt9Czx9LjHnSSpwBMmbRcgKFmxOtvxjTrKW19ye6PE3Ds1eQz3z8jr3W7_VbWmEu4Q8TVGSTHxs"
     end
 
     it "defaults to version 22.0" do
@@ -159,7 +160,7 @@ describe Databasedotcom::Client do
 
         it "parses response and obtains the token" do
           @client.authenticate(:username => "username", :password => "password")
-          @client.oauth_token.should == "access_token"
+          @client.oauth_token.should == @access_token
         end
 
         it "remembers the instance url" do
@@ -168,7 +169,7 @@ describe Databasedotcom::Client do
         end
 
         it "returns the token" do
-          @client.authenticate(:username => "username", :password => "password").should == "access_token"
+          @client.authenticate(:username => "username", :password => "password").should == @access_token
         end
         
         it "sets username and password" do
