@@ -227,8 +227,8 @@ describe Databasedotcom::Client do
       
       it "sets user id and org id" do
         @client.authenticate(@response)
-        @client.org_id == @org_id
-        @client.user_id == @user_id
+        @client.org_id.should == @org_id 
+        @client.user_id.should == @user_id 
       end
     end
 
@@ -251,6 +251,12 @@ describe Databasedotcom::Client do
 
         it "returns the token" do
           @client.authenticate(:token => "foo", :instance_url => "https://na1.salesforce.com").should == "foo"
+        end
+        
+        it "sets user id" do
+          @client.authenticate(:token => "foo", :instance_url => "https://na1.salesforce.com").should == "foo"
+          @client.stub(:query_org_id).and_return(@org_id)
+          @client.org_id.should == @org_id
         end
       end
 

@@ -30,7 +30,10 @@ module Databasedotcom
     # The SalesForce password
     attr_accessor :password
     # The SalesForce organization id for the authenticated user's Salesforce instance
-    attr_accessor :org_id
+    attr_writer :org_id
+    def org_id
+      @org_id ||= query_org_id # lazy query org_id when not set by login response
+    end
 
     # Returns a new client object. _options_ can be one of the following
     #
@@ -101,7 +104,8 @@ module Databasedotcom
         parse_auth_response(result.body)
       elsif options.is_a?(Hash)
         if options.has_key?("provider")
-          @user_id = options["extra"]["user_hash"]["user_id"] rescue nil
+          @user_id = parse_user_id_from_uid options["uid"] rescue nil
+          @org_id = parse_org_id_from_uid options["uid"] rescue nil
           self.instance_url = options["credentials"]["instance_url"]
           self.oauth_token = options["credentials"]["token"]
           self.refresh_token = options["credentials"]["refresh_token"]
@@ -471,12 +475,25 @@ module Databasedotcom
       (self.username && self.password) || (options && options[:username] && options[:password])
     end
     
+    def parse_user_id_from_uid(uid)
+      uid.match(/\/([^\/]+)$/)[1] rescue nil
+    end
+    
+    def parse_org_id_from_uid(uid)
+      uid.match(/00D[^\/]{12}/)[0] rescue nil
+    end
+    
     def parse_auth_response(body)
       json = JSON.parse(body)
-      @user_id = json["id"].match(/\/([^\/]+)$/)[1] rescue nil
-      @org_id = json["id"].match(/00D[^\/]{12}/)[0] rescue nil
+      uid = json["id"]
+      @user_id = parse_user_id_from_uid(uid)
+      @org_id = parse_org_id_from_uid(uid)
       self.instance_url = json["instance_url"]
       self.oauth_token = json["access_token"]
+    end
+    
+    def query_org_id
+      query("select id from Organization")[0]["Id"]
     end
   end
 end
