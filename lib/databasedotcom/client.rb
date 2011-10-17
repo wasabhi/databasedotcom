@@ -480,7 +480,7 @@ module Databasedotcom
     end
     
     def parse_org_id_from_uid(uid)
-      uid.match(/00D[^\/]{12}/)[0] rescue nil
+      uid.match(/\/id\/([^\/]+)/)[1] rescue nil
     end
     
     def parse_auth_response(body)
