@@ -253,9 +253,14 @@ describe Databasedotcom::Client do
           @client.authenticate(:token => "foo", :instance_url => "https://na1.salesforce.com").should == "foo"
         end
         
-        it "sets user id" do
+        it "does not set user_id" do
           @client.authenticate(:token => "foo", :instance_url => "https://na1.salesforce.com").should == "foo"
-          @client.stub(:query_org_id).and_return(@org_id)
+          @client.user_id.should be_nil
+        end
+        
+        it "loads the org_id upon request" do
+          @client.should_receive(:query).with("select id from Organization").and_return(["Id" => @org_id])
+          @client.authenticate(:token => "foo", :instance_url => "https://na1.salesforce.com").should == "foo"
           @client.org_id.should == @org_id
         end
       end
