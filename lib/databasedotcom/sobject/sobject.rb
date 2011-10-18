@@ -5,6 +5,11 @@ module Databasedotcom
       cattr_accessor :client
       extend ActiveModel::Naming if defined?(ActiveModel::Naming)
 
+      def ==(other)
+        return false unless other.is_a?(self.class)
+        self.Id == other.Id
+      end
+
       # Returns a new Sobject. The default values for all attributes are set based on its description.
       def initialize(attrs = {})
         super()
