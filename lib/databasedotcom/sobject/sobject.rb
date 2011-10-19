@@ -230,6 +230,11 @@ module Databasedotcom
       def self.delete(record_id)
         self.client.delete(self.sobject_name, record_id)
       end
+      
+      # Get the total number of records
+      def self.count
+        self.client.query("SELECT COUNT() FROM #{self.sobject_name}").total_size
+      end
 
       # Sobject objects support dynamic finders similar to ActiveRecord.
       #

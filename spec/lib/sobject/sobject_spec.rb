@@ -193,6 +193,13 @@ describe Databasedotcom::Sobject::Sobject do
       end
     end
 
+    describe ".count" do
+      it "gets the record count" do
+        @client.should_receive(:query).with("SELECT COUNT() FROM TestClass").and_return(double("collection", :total_size => 42))
+        TestClass.count.should == 42
+      end
+    end
+    
     describe ".coerce_params" do
       it "coerces boolean attributes" do
         TestClass.coerce_params("Checkbox_Field" => "1")["Checkbox_Field"].should be_true
