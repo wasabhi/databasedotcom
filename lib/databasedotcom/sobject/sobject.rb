@@ -86,7 +86,7 @@ module Databasedotcom
         self.class.description["fields"].select { |f| f[selection_attr] }.collect { |f| f["name"] }.each { |attr| attr_hash[attr] = self.send(attr) }
 
         if self.Id.nil?
-          self.client.create(self.class, attr_hash)
+          self.Id = self.client.create(self.class, attr_hash).Id
         else
           self.client.update(self.class, self.Id, attr_hash)
         end

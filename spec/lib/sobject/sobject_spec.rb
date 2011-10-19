@@ -461,19 +461,28 @@ describe Databasedotcom::Sobject::Sobject do
           @obj = TestClass.new
           @obj.client = @client
           @obj.Name = "testname"
+          @obj_double = double("object", "Id" => "foo")
         end
 
         it "creates the record remotely with the set attributes" do
-          @client.should_receive(:create).and_return("saved")
-          @obj.save.should == "saved"
+          @client.should_receive(:create).and_return(@obj_double)
+          @obj.save
         end
 
         it "includes only the createable attributes" do
           @client.should_receive(:create) do |clazz, attrs|
             attrs.all? {|attr, value| TestClass.createable?(attr).should be_true}
+            @obj_double
           end
 
           @obj.save
+        end
+
+        it "sets the Id of the newly-persisted object" do
+          @obj.Id.should be_nil
+          @client.should_receive(:create).and_return(@obj_double)
+          @obj.save
+          @obj.Id.should == @obj_double.Id
         end
       end
 
@@ -669,7 +678,7 @@ describe Databasedotcom::Sobject::Sobject do
       before do
         Databasedotcom::Sobject::Sobject.should_receive(:find).with("foo").and_return(double("sobject", :attributes => { "Id" => "foo", "Name" => "James"}))
       end
-      
+
       it "reloads the object" do
         obj = TestClass.new
         obj.Id = "foo"
@@ -684,7 +693,7 @@ describe Databasedotcom::Sobject::Sobject do
         obj.Id.should == "foo"
         obj.Name.should == "James"
       end
-      
+
       it "returns self" do
         obj = TestClass.new
         obj.Id = "foo"
