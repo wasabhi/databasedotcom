@@ -72,6 +72,49 @@ describe Databasedotcom::Sobject::Sobject do
       @field_names = TestClass.description["fields"].collect { |f| f["name"] }
     end
 
+    describe "#==" do
+
+      before do
+        @first = TestClass.new("Id" => "foo")
+      end
+
+      context "when the objects are the same class" do
+
+        context "when the ids match" do
+
+          before do
+            @second = TestClass.new("Id" => "foo")
+          end
+
+          it "returns true" do
+            @first.should == @second
+          end
+        end
+
+        context "when the ids do not match" do
+
+          before do
+            @second = TestClass.new("Id" => "bar")
+          end
+
+          it "returns false" do
+            @first.should_not == @second
+          end
+        end
+      end
+
+      context "when the objects are different classes" do
+
+        before do
+          @second = stub(:is_a? => false)
+        end
+
+        it "returns false" do
+          @first.should_not == @second
+        end
+      end
+    end
+
     describe ".new" do
       it "creates a new in-memory instance with the specified attributes" do
         obj = TestClass.new("Name" => "foo")
