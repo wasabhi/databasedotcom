@@ -385,6 +385,13 @@ describe Databasedotcom::Client do
           clazz = @client.materialize("AccountThing")
           clazz.name.should == "AccountThing"
         end
+        
+        it "materializes into the specified module even if a constant of the same name exists in an ancestor module" do
+          @client.sobject_module = TestModule
+          clazz = @client.materialize("Array")
+          clazz.name.should == "TestModule::Array"
+          @client.sobject_module = nil
+        end
       end
 
       it "sets the client on the new classes" do
