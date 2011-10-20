@@ -143,7 +143,7 @@ module Databasedotcom
       classes = (classnames.is_a?(Array) ? classnames : [classnames]).collect do |clazz|
         original_classname = clazz
         clazz = original_classname[0,1].capitalize + original_classname[1..-1]
-        unless module_namespace.const_defined?(clazz, false)
+        unless const_defined_in_module(module_namespace, clazz)
           new_class = module_namespace.const_set(clazz, Class.new(Databasedotcom::Sobject::Sobject))
           new_class.client = self
           new_class.materialize(original_classname)
@@ -491,6 +491,10 @@ module Databasedotcom
 
     def query_org_id
       query("select id from Organization")[0]["Id"]
+    end
+    
+    def const_defined_in_module(mod, const)
+      mod.method(:const_defined?).arity == 1 ? mod.const_defined?(const) : mod.const_defined?(const, false)
     end
   end
 end
