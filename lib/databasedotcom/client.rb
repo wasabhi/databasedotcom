@@ -424,6 +424,11 @@ module Databasedotcom
           key_from_label(field["label"]) == name || field["name"] == name || field["relationshipName"] == name
         end
       
+        # Field not found
+        if field == nil
+          break
+        end
+      
         # If reference/lookup field data was fetched, recursively build the child record and apply
         if value.is_a?(Hash) and field['type'] == 'reference' and field["relationshipName"]
           relation = record_from_hash( value )

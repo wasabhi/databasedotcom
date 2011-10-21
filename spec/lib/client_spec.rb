@@ -649,6 +649,12 @@ describe Databasedotcom::Client do
             object.DateTime_Field.should be_instance_of(DateTime)
             object.Picklist_Multiselect_Field.should be_instance_of(Array)
           end
+          
+          it "traverses relationships" do
+			object = @client.query("SELECT Checkbox_Label FROM Whizbang").first
+			object.ParentWhizbang__r.should be_instance_of(MySobjects::Whizbang)
+			object.ParentWhizbang__r.Text_Field.should == "Hello"
+          end
         end
 
         context "with paginated results" do
