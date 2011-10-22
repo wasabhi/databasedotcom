@@ -414,7 +414,7 @@ module Databasedotcom
       response = JSON.parse(response)
       collection_from_hash( response )
     end
-    
+
     # Converts a Hash of object data into a concrete SObject
     def record_from_hash(data)
       attributes = data.delete('attributes')
@@ -423,17 +423,17 @@ module Databasedotcom
         field = new_record.description['fields'].find do |field|
           key_from_label(field["label"]) == name || field["name"] == name || field["relationshipName"] == name
         end
-      
+
         # Field not found
         if field == nil
           break
         end
-      
+
         # If reference/lookup field data was fetched, recursively build the child record and apply
         if value.is_a?(Hash) and field['type'] == 'reference' and field["relationshipName"]
           relation = record_from_hash( value )
           set_value( new_record, field["relationshipName"], relation, 'reference' )
-        
+
         # Apply the raw value for all other field types
         else
           set_value(new_record, field["name"], value, field["type"]) if field
@@ -441,14 +441,14 @@ module Databasedotcom
       end
       new_record
     end
-    
-    def collection_from_hash(data)      
+
+    def collection_from_hash(data)
       array_response = data.is_a?(Array)
       if array_response
         records = data.collect { |rec| self.find(rec["attributes"]["type"], rec["Id"]) }
       else
         records = data["records"].collect do |record|
-          record_from_hash( record )          
+          record_from_hash( record )
         end
       end
 
@@ -515,7 +515,7 @@ module Databasedotcom
     def query_org_id
       query("select id from Organization")[0]["Id"]
     end
-    
+
     def const_defined_in_module(mod, const)
       mod.method(:const_defined?).arity == 1 ? mod.const_defined?(const) : mod.const_defined?(const, false)
     end

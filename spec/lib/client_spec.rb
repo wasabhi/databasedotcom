@@ -651,9 +651,9 @@ describe Databasedotcom::Client do
           end
           
           it "traverses relationships" do
-			object = @client.query("SELECT Checkbox_Label FROM Whizbang").first
-			object.ParentWhizbang__r.should be_instance_of(MySobjects::Whizbang)
-			object.ParentWhizbang__r.Text_Field.should == "Hello"
+            object = @client.query("SELECT Checkbox_Label FROM Whizbang").first
+            object.ParentWhizbang__r.should be_instance_of(MySobjects::Whizbang)
+            object.ParentWhizbang__r.Text_Field.should == "Hello"
           end
         end
 
