@@ -125,7 +125,7 @@ Materialized Sobject classes behave much like ActiveRecord classes:
       "Phone" => "4156543210"                           #=> change several attributes at once and save them
     contact.delete                                      #=> delete the contact from the database
 
-See the documentation for full details.
+See the documentation[http://rubydoc.info/github/heroku/databasedotcom/master/frames] for full details.
 
 == Accessing the Chatter API
 You can easily access Chatter feeds, group, conversations, etc.:
