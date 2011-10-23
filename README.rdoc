@@ -17,7 +17,7 @@ Source is available at github[http://github.com/heroku/databasedotcom]
 
 = Usage
 == Initialization
-When you create a Databasedotcom::Client object, you need to configure it with a client id and client secret that corresponds to one of the Remote Access Applications configured within your SalesForce instance.  The SalesForce UI refers to the client id as "Consumer Key", and to the client secret as "Consumer Secret".
+When you create a Databasedotcom::Client object, you need to configure it with a client id and client secret that corresponds to one of the Remote Access Applications configured within your Salesforce instance.  The Salesforce UI refers to the client id as "Consumer Key", and to the client secret as "Consumer Secret".
 
 You can configure your Client object with a client id and client secret in one of several different ways:
 === Configuration from the environment
@@ -79,25 +79,25 @@ Then, when you create your client like:
 it will use the configuration information that you set with <tt>heroku config:add</tt>.
 
 == Authentication
-The first thing you need to do with the new Client is to authenticate with SalesForce.  You can do this in one of several ways:
+The first thing you need to do with the new Client is to authenticate with Salesforce.  You can do this in one of several ways:
 
 === Authentication via an externally-acquired OAuth access token
-If you have acquired an OAuth access token for your SalesForce instance through some external means, you can use it.  Note that you have to pass both the token and your SalesForce instance URL to the <tt>authenticate</tt> method:
+If you have acquired an OAuth access token for your Salesforce instance through some external means, you can use it.  Note that you have to pass both the token and your Salesforce instance URL to the <tt>authenticate</tt> method:
 
     client.authenticate :token => "my-oauth-token", :instance_url => "http://na1.salesforce.com"  #=> "my-oauth-token"
 
 === Authentication via Omniauth
-If you are using the gem within the context of a web application, and your web app is using Omniauth to do OAuth with SalesForce, you can authentication the Client direction via the Hash that Omniauth passes to your OAuth callback method, like so:
+If you are using the gem within the context of a web application, and your web app is using Omniauth to do OAuth with Salesforce, you can authentication the Client direction via the Hash that Omniauth passes to your OAuth callback method, like so:
 
     client.authenticate request.env['omniauth.auth']  #=> "the-oauth-token"
 
 === Authentication via username and password
-You can authenticate your Client directly with SalesForce with a valid username and password for a user in your SalesForce instance.  Note that, if access to your SalesForce instance requires a {security token}[http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_concepts_security.htm], the value that you pass for <tt>:password</tt> must be the password for the user concatenated with her security token.
+You can authenticate your Client directly with Salesforce with a valid username and password for a user in your Salesforce instance.  Note that, if access to your Salesforce instance requires a {security token}[http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_concepts_security.htm], the value that you pass for <tt>:password</tt> must be the password for the user concatenated with her security token.
 
     client.authenticate :username => "foo@bar.com", :password => "ThePasswordTheSecurityToken"  #=> "the-oauth-token"
 
 == Accessing the Sobject API
-You can retrieve a list of Sobject defined in your SalesForce instance like so:
+You can retrieve a list of Sobject defined in your Salesforce instance like so:
 
     client.list_sobjects  #=> ['User', 'Group', 'Contact']
 
