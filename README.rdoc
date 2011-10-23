@@ -147,7 +147,7 @@ You can easily access Chatter feeds, group, conversations, etc.:
     you = Databasedotcom::Chatter::User.find(client, "your-user-id")
     me.follow(you)                                            #=> start following a user
 
-See the documentation for full details.
+See the documentation[http://rubydoc.info/github/heroku/databasedotcom/master/frames] for full details.
 
 = License
 
