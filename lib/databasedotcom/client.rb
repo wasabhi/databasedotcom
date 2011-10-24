@@ -47,7 +47,7 @@ module Databasedotcom
     #    version: 23.0
     #    sobject_module: My::Module
     #    ca_file: some/ca/file.cert
-    #    verify_mode: 
+    #    verify_mode: OpenSSL::SSL::VERIFY_PEER
     # * A Hash containing the following keys:
     #    client_id
     #    client_secret
@@ -55,9 +55,11 @@ module Databasedotcom
     #    debugging
     #    version
     #    sobject_module
+    #    ca_file
+    #    verify_mode
     # If the environment variables DATABASEDOTCOM_CLIENT_ID, DATABASEDOTCOM_CLIENT_SECRET, DATABASEDOTCOM_HOST,
-    # DATABASEDOTCOM_DEBUGGING, DATABASEDOTCOM_VERSION, and/or DATABASEDOTCOM_SOBJECT_MODULE are present, they
-    # override any other values provided
+    # DATABASEDOTCOM_DEBUGGING, DATABASEDOTCOM_VERSION, DATABASEDOTCOM_SOBJECT_MODULE, DATABASEDOTCOM_CA_FILE, and/or 
+    # DATABASEDOTCOM_VERIFY_MODE are present, they override any other values provided
     def initialize(options = {})
       if options.is_a?(String)
         @options = YAML.load_file(options)
