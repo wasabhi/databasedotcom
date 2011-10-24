@@ -31,6 +31,10 @@ module Databasedotcom
     attr_accessor :password
     # The SalesForce organization id for the authenticated user's Salesforce instance
     attr_reader :org_id
+    # The CA file configured for this instance, if any
+    attr_accessor :ca_file
+    # The SSL verify mode configured for this instance, if any
+    attr_accessor :verify_mode
 
     # Returns a new client object. _options_ can be one of the following
     #
@@ -42,6 +46,8 @@ module Databasedotcom
     #    debugging: true
     #    version: 23.0
     #    sobject_module: My::Module
+    #    ca_file: some/ca/file.cert
+    #    verify_mode: 
     # * A Hash containing the following keys:
     #    client_id
     #    client_secret
@@ -55,6 +61,7 @@ module Databasedotcom
     def initialize(options = {})
       if options.is_a?(String)
         @options = YAML.load_file(options)
+        @options["verify_mode"] = @options["verify_mode"].constantize if @options["verify_mode"] && @options["verify_mode"].is_a?(String)
       else
         @options = options
       end
@@ -73,10 +80,14 @@ module Databasedotcom
         self.client_secret = ENV['DATABASEDOTCOM_CLIENT_SECRET'] || @options[:client_secret]
         self.host = ENV['DATABASEDOTCOM_HOST'] || @options[:host] || "login.salesforce.com"
       end
+      
       self.debugging = ENV['DATABASEDOTCOM_DEBUGGING'] || @options[:debugging]
       self.version = ENV['DATABASEDOTCOM_VERSION'] || @options[:version]
       self.version = self.version.to_s if self.version
       self.sobject_module = ENV['DATABASEDOTCOM_SOBJECT_MODULE'] || @options[:sobject_module]
+      self.ca_file = ENV['DATABASEDOTCOM_CA_FILE'] || @options[:ca_file]
+      self.verify_mode = ENV['DATABASEDOTCOM_VERIFY_MODE'] || @options[:verify_mode]
+      self.verify_mode = self.verify_mode.to_i if self.verify_mode
   end
 
     # Authenticate to the Force.com API.  _options_ is a Hash, interpreted as follows:
@@ -366,7 +377,11 @@ module Databasedotcom
     end
 
     def https_request(host=nil)
-      Net::HTTP.new(host || URI.parse(self.instance_url).host, 443).tap{|n| n.use_ssl = true }
+      Net::HTTP.new(host || URI.parse(self.instance_url).host, 443).tap do |http| 
+        http.use_ssl = true 
+        http.ca_file = self.ca_file if self.ca_file
+        http.verify_mode = self.verify_mode if self.verify_mode
+      end
     end
 
     def encode_path_with_params(path, parameters={})

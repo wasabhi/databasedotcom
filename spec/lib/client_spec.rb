@@ -13,6 +13,8 @@ describe Databasedotcom::Client do
         ENV['DATABASEDOTCOM_HOST'] = "foo.bar"
         ENV['DATABASEDOTCOM_VERSION'] = '99'
         ENV['DATABASEDOTCOM_SOBJECT_MODULE'] = "Databasedotcom::Sobject"
+        ENV['DATABASEDOTCOM_CA_FILE'] = "ca/file.cert"
+        ENV['DATABASEDOTCOM_VERIFY_MODE'] = "1"
         @client = Databasedotcom::Client.new
       end
 
@@ -24,6 +26,8 @@ describe Databasedotcom::Client do
         ENV.delete 'DATABASEDOTCOM_VERSION'
         ENV.delete 'DATABASEDOTCOM_SOBJECT_MODULE'
         ENV.delete "DATABASE_COM_URL"
+        ENV.delete "DATABASEDOTCOM_CA_FILE"
+        ENV.delete "DATABASEDOTCOM_VERIFY_MODE"
       end
 
       it "takes configuration information from the environment, if present" do
@@ -33,6 +37,8 @@ describe Databasedotcom::Client do
         @client.debugging.should be_true
         @client.version.should == '99'
         @client.sobject_module.should == "Databasedotcom::Sobject"
+        @client.ca_file.should == "ca/file.cert"
+        @client.verify_mode.should == 1
       end
 
       it "takes configuration information from a URL" do
@@ -44,8 +50,9 @@ describe Databasedotcom::Client do
         @client.password.should == "WeOpvh31ppK"
         @client.host.should == "prerelna1.pre.salesforce.com"
         @client.sobject_module.should == "Databasedotcom::Sobject"
+        @client.ca_file.should == "ca/file.cert"
+        @client.verify_mode.should == 1
       end
-
     end
 
     context "from a yaml file" do
@@ -56,26 +63,32 @@ describe Databasedotcom::Client do
         client.debugging.should be_true
         client.host.should == "bro.baz"
         client.version.should == '88'
+        client.ca_file.should == "other/ca/file.cert"
+        client.verify_mode.should == 1
       end
     end
 
     context "from a hash" do
       it "takes configuration information from the hash" do
-        client = Databasedotcom::Client.new("client_id" => "client_id", "client_secret" => "client_secret", "debugging" => true, "host" => "foo.baz", "version" => "77")
+        client = Databasedotcom::Client.new("client_id" => "client_id", "client_secret" => "client_secret", "debugging" => true, "host" => "foo.baz", "version" => "77", "ca_file" => "alt/ca/file.cert", "verify_mode" => 3)
         client.client_id.should == "client_id"
         client.client_secret.should == "client_secret"
         client.debugging.should be_true
         client.host.should == "foo.baz"
         client.version.should == "77"
+        client.ca_file.should == "alt/ca/file.cert"
+        client.verify_mode.should == 3
       end
 
       it "accepts symbols in the hash" do
-        client = Databasedotcom::Client.new(:client_id => "client_id", :client_secret => "client_secret", :debugging => true, :host => "foo.baz", :version => "77")
+        client = Databasedotcom::Client.new(:client_id => "client_id", :client_secret => "client_secret", :debugging => true, :host => "foo.baz", :version => "77", :ca_file => "alt/ca/file.cert", :verify_mode => 3)
         client.client_id.should == "client_id"
         client.client_secret.should == "client_secret"
         client.debugging.should be_true
         client.host.should == "foo.baz"
         client.version.should == "77"
+        client.ca_file.should == "alt/ca/file.cert"
+        client.verify_mode.should == 3
       end
     end
 
@@ -90,6 +103,14 @@ describe Databasedotcom::Client do
 
       it "defaults to no debugging output" do
         @client.debugging.should be_false
+      end
+      
+      it "defaults to no special ca file" do
+        @client.ca_file.should be_nil
+      end
+      
+      it "defaults to no special verify mode" do
+        @client.verify_mode.should be_nil
       end
     end
 
@@ -129,17 +150,31 @@ describe Databasedotcom::Client do
       @org_id = "00Dx0000000BV7z"
       @user_id = "005x00000012Q9P"
     end
+    
+    describe "common behavior" do
+      before do
+        response_body = File.read(File.join(File.dirname(__FILE__), '..', "fixtures/auth_success_response.json"))
+        stub_request(:post, "https://bro.baz/services/oauth2/token?grant_type=password&client_id=client_id&client_secret=client_secret&username=username&password=password").to_return(:body => response_body, :status => 200)
+        response_body = File.read(File.join(File.dirname(__FILE__), '..', "fixtures/services_data_success_response.json"))
+        stub_request(:get, "https://na1.salesforce.com/services/data").to_return(:body => response_body, :status => 200)
+      end
 
-    it "defaults to version 22.0" do
-      @client.version = nil
+      it "uses the configured ca file" do
+        Net::HTTP.any_instance.should_receive(:"ca_file=").with("other/ca/file.cert")
+        @client.authenticate(:username => "username", :password => "password")
+      end
+    
+      it "uses the configured verify mode" do
+        Net::HTTP.any_instance.should_receive(:"verify_mode=").with(OpenSSL::SSL::VERIFY_PEER)
+        @client.authenticate(:username => "username", :password => "password")
+      end
 
-      response_body = File.read(File.join(File.dirname(__FILE__), '..', "fixtures/auth_success_response.json"))
-      stub_request(:post, "https://bro.baz/services/oauth2/token?grant_type=password&client_id=client_id&client_secret=client_secret&username=username&password=password").to_return(:body => response_body, :status => 200)
-      response_body = File.read(File.join(File.dirname(__FILE__), '..', "fixtures/services_data_success_response.json"))
-      stub_request(:get, "https://na1.salesforce.com/services/data").to_return(:body => response_body, :status => 200)
-
-      @client.authenticate(:username => "username", :password => "password")
-      @client.version.should == "22.0"
+      it "defaults to version 22.0" do
+        @client.version = nil
+        @client.authenticate(:username => "username", :password => "password")
+        @client.version.should == "22.0"
+      end
+    
     end
 
     context "with a username and password" do
