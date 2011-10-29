@@ -130,17 +130,6 @@ module Databasedotcom
         self.description["fields"].collect { |f| [f["name"], f["relationshipName"]] }.flatten.compact
       end
 
-      def self.register_field( name, field )
-        attr_accessor name.to_sym
-        self.type_map[name] = {
-          :type => field["type"],
-          :label => field["label"],
-          :picklist_values => field["picklistValues"],
-          :updateable? => field["updateable"],
-          :createable? => field["createable"]
-        }
-      end
-
       # Materializes the dynamically created Sobject class by adding all attribute accessors for each field as described in the description of the object on Force.com
       def self.materialize(sobject_name)
         self.cattr_accessor :description
@@ -150,18 +139,18 @@ module Databasedotcom
         self.sobject_name = sobject_name
         self.description = self.client.describe_sobject(self.sobject_name)
         self.type_map = {}
-        
+
         self.description["fields"].each do |field|
-          
+
           # Register normal fields
           name = field["name"]
           register_field( field["name"], field )
-          
+
           # Register relationship fields.
           if( field["type"] == "reference" and field["relationshipName"] )
             register_field( field["relationshipName"], field )
           end
-          
+
         end
       end
 
@@ -243,7 +232,7 @@ module Databasedotcom
       def self.delete(record_id)
         self.client.delete(self.sobject_name, record_id)
       end
-      
+
       # Get the total number of records
       def self.count
         self.client.query("SELECT COUNT() FROM #{self.sobject_name}").total_size
@@ -271,7 +260,7 @@ module Databasedotcom
           end
 
           limit_clause = method_name.to_s.include?('_all_by_') ? "" : " LIMIT 1"
-          
+
           results = self.client.query("SELECT #{self.field_list} FROM #{self.sobject_name} WHERE #{soql_conditions_for(attrs_and_values_for_find)}#{limit_clause}")
           results = limit_clause == "" ? results : results.first rescue nil
 
@@ -314,6 +303,20 @@ module Databasedotcom
 
       private
 
+      def self.register_field( name, field )
+        attr_accessor(name.to_sym)
+        public name.to_sym
+        public "#{name}=".to_sym
+        
+        self.type_map[name] = {
+          :type => field["type"],
+          :label => field["label"],
+          :picklist_values => field["picklistValues"],
+          :updateable? => field["updateable"],
+          :createable? => field["createable"]
+        }
+      end
+
       def self.field_list
         self.description['fields'].collect { |f| f['name'] }.join(',')
       end
@@ -322,7 +325,7 @@ module Databasedotcom
         raise ArgumentError.new("No attribute named #{attr_name}") unless self.type_map.has_key?(attr_name)
         self.type_map[attr_name][key]
       end
-      
+
       def self.soql_conditions_for(params)
         params.inject([]) do |arr, av|
           case av[1]
@@ -333,7 +336,7 @@ module Databasedotcom
             else
               value_str = av[1].to_s
           end
-          
+
           arr << "#{av[0]} = #{value_str}"
           arr
         end.join(" AND ")
