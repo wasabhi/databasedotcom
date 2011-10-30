@@ -19,6 +19,7 @@ module Databasedotcom
         self.attributes=(attrs)
       end
 
+      # Set attributes of this object, from a hash, in bulk
       def attributes=(attrs)
         attrs.each do |key, value|
           self.send("#{key}=", value)
@@ -113,10 +114,12 @@ module Databasedotcom
         self
       end
 
+      # Get a named attribute on this object
       def [](attr_name)
         self.send(attr_name) rescue nil
       end
 
+      # Set a named attribute on this object
       def []=(attr_name, value)
         raise ArgumentError.new("No attribute named #{attr_name}") unless self.class.attributes.include?(attr_name)
         self.send("#{attr_name}=", value)
@@ -304,10 +307,9 @@ module Databasedotcom
       private
 
       def self.register_field( name, field )
-        attr_accessor(name.to_sym)
-        public name.to_sym
-        public "#{name}=".to_sym
-        
+        public
+        attr_accessor name.to_sym
+        private
         self.type_map[name] = {
           :type => field["type"],
           :label => field["label"],
