@@ -104,11 +104,11 @@ describe Databasedotcom::Client do
       it "defaults to no debugging output" do
         @client.debugging.should be_false
       end
-      
+
       it "defaults to no special ca file" do
         @client.ca_file.should be_nil
       end
-      
+
       it "defaults to no special verify mode" do
         @client.verify_mode.should be_nil
       end
@@ -150,7 +150,7 @@ describe Databasedotcom::Client do
       @org_id = "00Dx0000000BV7z"
       @user_id = "005x00000012Q9P"
     end
-    
+
     describe "common behavior" do
       before do
         response_body = File.read(File.join(File.dirname(__FILE__), '..', "fixtures/auth_success_response.json"))
@@ -163,7 +163,7 @@ describe Databasedotcom::Client do
         Net::HTTP.any_instance.should_receive(:"ca_file=").with("other/ca/file.cert")
         @client.authenticate(:username => "username", :password => "password")
       end
-    
+
       it "uses the configured verify mode" do
         Net::HTTP.any_instance.should_receive(:"verify_mode=").with(OpenSSL::SSL::VERIFY_PEER)
         @client.authenticate(:username => "username", :password => "password")
@@ -174,7 +174,7 @@ describe Databasedotcom::Client do
         @client.authenticate(:username => "username", :password => "password")
         @client.version.should == "22.0"
       end
-    
+
     end
 
     context "with a username and password" do
@@ -208,13 +208,13 @@ describe Databasedotcom::Client do
         it "returns the token" do
           @client.authenticate(:username => "username", :password => "password").should == @access_token
         end
-        
+
         it "sets username and password" do
           @client.authenticate(:username => "username", :password => "password")
           @client.username.should == "username"
           @client.password.should == "password"
         end
-        
+
         it "sets the user_id and org_id" do
           @client.authenticate(:username => "username", :password => "password")
           @client.user_id.should == @user_id
@@ -250,20 +250,20 @@ describe Databasedotcom::Client do
         @client.authenticate(@response)
         @client.instance_url.should == "https://na1.salesforce.com"
       end
-      
+
       it "remembers the refresh token" do
         @client.authenticate(@response)
         @client.refresh_token.should == "refresh_token"
-      end        
+      end
 
       it "returns the token" do
         @client.authenticate(@response).should == "access_token"
       end
-      
+
       it "sets user id and org id" do
         @client.authenticate(@response)
-        @client.org_id.should == @org_id 
-        @client.user_id.should == @user_id 
+        @client.org_id.should == @org_id
+        @client.user_id.should == @user_id
       end
     end
 
@@ -278,7 +278,7 @@ describe Databasedotcom::Client do
           @client.authenticate(:token => "obtained_access_token", :instance_url => "https://na1.salesforce.com")
           @client.instance_url.should == "https://na1.salesforce.com"
         end
-        
+
         it "sets the refresh token" do
           @client.authenticate(:token => "obtained_access_token", :instance_url => "https://na1.salesforce.com", :refresh_token => "refresh_token")
           @client.refresh_token.should == "refresh_token"
@@ -287,12 +287,12 @@ describe Databasedotcom::Client do
         it "returns the token" do
           @client.authenticate(:token => "foo", :instance_url => "https://na1.salesforce.com").should == "foo"
         end
-        
+
         it "does not set user_id" do
           @client.authenticate(:token => "foo", :instance_url => "https://na1.salesforce.com").should == "foo"
           @client.user_id.should be_nil
         end
-        
+
         it "loads the org_id upon request" do
           @client.should_receive(:query).with("select id from Organization").and_return(["Id" => @org_id])
           @client.authenticate(:token => "foo", :instance_url => "https://na1.salesforce.com").should == "foo"
@@ -349,26 +349,26 @@ describe Databasedotcom::Client do
         end
       end
     end
-    
+
     describe "#describe_sobjects" do
       context "with a successful request" do
         before do
           @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/describe_sobjects_success_response.json"))
           stub_request(:get, "https://na1.salesforce.com/services/data/v23.0/sobjects").to_return(:body => @response_body, :status => 200)
         end
-        
+
         it "returns an array of hashes listing the properties for available sobjects with a given version" do
           @client.describe_sobjects.first["name"].should == "Account"
           @client.describe_sobjects.first["createable"].should be_true
         end
       end
-      
+
       context "with a failed request" do
         before do
           @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/describe_sobjects_error_response.json"))
           stub_request(:get, "https://na1.salesforce.com/services/data/v23.0/sobjects").to_return(:body => @response_body, :status => 400)
         end
-        
+
         it "raises a Databasedotcom::Sobject::SalesForceError" do
           lambda {
             @client.describe_sobjects
@@ -420,7 +420,7 @@ describe Databasedotcom::Client do
           clazz = @client.materialize("AccountThing")
           clazz.name.should == "AccountThing"
         end
-        
+
         it "materializes into the specified module even if a constant of the same name exists in an ancestor module" do
           @client.sobject_module = TestModule
           clazz = @client.materialize("Array")
@@ -632,6 +632,16 @@ describe Databasedotcom::Client do
             object.DateTime_Field.should be_instance_of(DateTime)
             object.Picklist_Multiselect_Field.should be_instance_of(Array)
           end
+
+          it "parses Date attributes" do
+            object = @client.find(MySobjects::Whizbang, "23foo")
+            object.Date_Field.should == Date.civil(2010, 01, 01)
+          end
+
+          it "parses DateTime attributes" do
+            object = @client.find(MySobjects::Whizbang, "23foo")
+            object.DateTime_Field.should == DateTime.civil(2011, 07, 07, 0, 37, 0)
+          end
         end
 
         context "with an invalid id" do
@@ -654,7 +664,7 @@ describe Databasedotcom::Client do
           stub_request(:get, "https://na1.salesforce.com/services/data/v23.0/query?q=SELECT+Name+FROM+Whizbang+WHERE+Name='steve%20%26%20me%3F'").to_return(:body => response_body, :status => 200)
           @client.query("SELECT Name FROM Whizbang WHERE Name='steve & me?'").should be_a_kind_of(Enumerable)
         end
-        
+
         context "with results" do
           before do
             @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/query_success_response.json"))
@@ -684,7 +694,7 @@ describe Databasedotcom::Client do
             object.DateTime_Field.should be_instance_of(DateTime)
             object.Picklist_Multiselect_Field.should be_instance_of(Array)
           end
-          
+
           it "traverses relationships" do
             object = @client.query("SELECT Checkbox_Label FROM Whizbang").first
             object.ParentWhizbang__r.should be_instance_of(MySobjects::Whizbang)
@@ -1034,7 +1044,7 @@ describe Databasedotcom::Client do
           @client.http_get("/my/path", nil, {"Something" => "Header"})
         }.should raise_error(Databasedotcom::SalesForceError)
       end
-      
+
       it_should_behave_like "a request that can refresh the oauth token", :get, "get", "https://na1.salesforce.com/my/path", 200
     end
 
