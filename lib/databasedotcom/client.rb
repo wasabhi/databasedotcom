@@ -1,6 +1,7 @@
 require 'net/https'
 require 'json'
 require 'net/http/post/multipart'
+require 'date'
 
 module Databasedotcom
   # Interface for operating the Force.com REST API
