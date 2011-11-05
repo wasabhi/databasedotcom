@@ -81,6 +81,10 @@ module Databasedotcom
       #    c = Car.find_by_Color("Yellow")
       #    c.Color = "Green"
       #    c.save
+      #
+      # _options_ can contain the following keys:
+      #
+      #    exclusions # an array of field names (case sensitive) to exclude from save
       def save(options={})
         attr_hash = {}
         selection_attr = self.Id.nil? ? "createable" : "updateable"
