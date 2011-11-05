@@ -81,7 +81,7 @@ module Databasedotcom
       #    c = Car.find_by_Color("Yellow")
       #    c.Color = "Green"
       #    c.save
-      def save
+      def save(options={})
         attr_hash = {}
         selection_attr = self.Id.nil? ? "createable" : "updateable"
         self.class.description["fields"].select { |f| f[selection_attr] }.collect { |f| f["name"] }.each { |attr| attr_hash[attr] = self.send(attr) }
