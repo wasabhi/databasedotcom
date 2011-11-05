@@ -93,7 +93,7 @@ module Databasedotcom
         # allow fields to be removed on a case by case basis as some data is not allowed to be saved 
         # (e.g. Name field on Account with record type of Person Account) despite the API listing 
         # some fields as editable
-        if options[:exclusions] and options[:exclusions].respond_to?('include') then
+        if options[:exclusions] and options[:exclusions].respond_to?(:include) then
           attr_hash.delete_if { |key, value| options[:exclusions].include?(key.to_s) }
         end
 
