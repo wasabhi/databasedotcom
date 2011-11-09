@@ -19,10 +19,9 @@ Source is available at github[http://github.com/heroku/databasedotcom]
 
 To contribute, all pull requests with code changes require unit tests. To setup the project locally and be able to run tests do the following:
 
-1. Clone the databasedotcom project
-2. Install rspec gem
-3. Install webmock gem
-4. Run the rspec command to run all unit tests
+    $ git clone git://github.com/heroku/databasedotcom.git
+    $ bundle install
+    $ rspec
 
 = Usage
 == Initialization
