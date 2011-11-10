@@ -17,11 +17,10 @@ Source is available at github[http://github.com/heroku/databasedotcom]
 
 = Contributions
 
-To contribute, all pull requests with code changes require unit tests. To setup the project locally and be able to run tests do the following:
+To contribute, fork this repo, make changes in your fork, then send a pull request.  No pull requests without accompanying tests will be accepted.  To run tests in your fork, just do 
 
-    $ git clone git://github.com/heroku/databasedotcom.git
-    $ bundle install
-    $ rspec
+    bundle install
+    rake
 
 = Usage
 == Initialization
