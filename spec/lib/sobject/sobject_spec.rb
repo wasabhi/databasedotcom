@@ -453,6 +453,14 @@ describe Databasedotcom::Sobject::Sobject do
       end
     end
 
+    describe "#attributes" do
+      it "returns a hash representing the object state" do
+        attrs = { "Name" => "Jim Bob", "Number_Field" => 42 }
+        obj = TestClass.new(attrs)
+        attrs.keys.each {|attr| obj.attributes[attr].should == attrs[attr]}
+      end
+    end
+    
     describe "#attributes=" do
       it "updates the object with the provided attributes" do
         obj = TestClass.new

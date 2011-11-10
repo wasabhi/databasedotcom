@@ -19,6 +19,14 @@ module Databasedotcom
         self.attributes=(attrs)
       end
 
+      # Returns a hash representing the state of this object
+      def attributes
+        self.class.attributes.inject({}) do |hash, attr|
+          hash[attr] = self.send(attr.to_sym)
+          hash
+        end
+      end
+      
       # Set attributes of this object, from a hash, in bulk
       def attributes=(attrs)
         attrs.each do |key, value|
