@@ -498,7 +498,7 @@ module Databasedotcom
             when "multipicklist"
               coerced_attrs[key] = (attrs[key] || []).join(';')
             when "datetime"
-              coerced_attrs[key] = attrs[key] ? attrs[key].strftime("%Y-%m-%dT%H:%M:%S.%L%z") : nil
+              coerced_attrs[key] = attrs[key] ? attrs[key].strftime(RUBY_VERSION.match(/^1.8/) ? "%Y-%m-%dT%H:%M:%S.000%z" : "%Y-%m-%dT%H:%M:%S.%L%z") : nil
             else
               coerced_attrs[key] = attrs[key]
           end

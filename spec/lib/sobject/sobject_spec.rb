@@ -30,7 +30,7 @@ describe Databasedotcom::Sobject::Sobject do
 
         describe ".attributes" do
           it "returns the attributes for this Sobject" do
-            TestClass.attributes.should_not be_nil            
+            TestClass.attributes.should_not be_nil
             TestClass.attributes.should =~ response["fields"].collect { |f| [f["name"], f["relationshipName"]] }.flatten.compact
           end
         end
@@ -199,7 +199,7 @@ describe Databasedotcom::Sobject::Sobject do
         TestClass.count.should == 42
       end
     end
-    
+
     describe ".coerce_params" do
       it "coerces boolean attributes" do
         TestClass.coerce_params("Checkbox_Field" => "1")["Checkbox_Field"].should be_true
@@ -253,15 +253,22 @@ describe Databasedotcom::Sobject::Sobject do
           end
 
           it "handles date values" do
-            today = Date.today
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_FIeld = #{today.to_s} LIMIT 1").and_return(["bar"])
-            TestClass.find_by_Date_FIeld(today).should == "bar"
+            today = Date.civil(2011, 04, 02)
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_Field = 2011-04-02 LIMIT 1").and_return(["bar"])
+            TestClass.find_by_Date_Field(today).should == "bar"
           end
 
           it "handles datetime values" do
-            now = Time.now
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")} LIMIT 1").and_return(["bar"])
+            now = DateTime.civil(2011, 04, 02, 20, 15, 33)
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = 2011-04-02T20:15:33.000+00:00 LIMIT 1").and_return(["bar"])
             TestClass.find_by_DateTime_Field(now).should == "bar"
+          end
+
+          it "handles time values" do
+            now = Time.utc(2011, "apr", 2, 20, 15, 33)
+            offs = now.utc.strftime("%z").insert(-3, ":")
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Time_Field = 2011-04-02T20:15:33.000#{offs} LIMIT 1").and_return(["bar"])
+            TestClass.find_by_Time_Field(now).should == "bar"
           end
 
           it "escapes special characters" do
@@ -301,15 +308,22 @@ describe Databasedotcom::Sobject::Sobject do
           end
 
           it "handles date values" do
-            today = Date.today
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_FIeld = #{today.to_s}").and_return(["bar"])
-            TestClass.find_all_by_Date_FIeld(today).should == ["bar"]
+            today = Date.civil(2011, 04, 02)
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_Field = 2011-04-02").and_return(["bar"])
+            TestClass.find_all_by_Date_Field(today).should == ["bar"]
           end
 
           it "handles datetime values" do
-            now = Time.now
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")}").and_return(["bar"])
+            now = DateTime.civil(2011, 04, 02, 20, 15, 33)
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = 2011-04-02T20:15:33.000+00:00").and_return(["bar"])
             TestClass.find_all_by_DateTime_Field(now).should == ["bar"]
+          end
+
+          it "handles time values" do
+            now = Time.utc(2011, "apr", 2, 20, 15, 33)
+            offs = now.utc.strftime("%z").insert(-3, ":")
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Time_Field = 2011-04-02T20:15:33.000#{offs}").and_return(["bar"])
+            TestClass.find_all_by_Time_Field(now).should == ["bar"]
           end
 
           it "escapes special characters" do
@@ -353,17 +367,25 @@ describe Databasedotcom::Sobject::Sobject do
           end
 
           it "handles date values" do
-            today = Date.today
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_FIeld = #{today.to_s} LIMIT 1").and_return(nil)
-            @client.should_receive(:create).with(TestClass, "Date_FIeld" => today).and_return("gar")
-            TestClass.find_or_create_by_Date_FIeld(today).should == "gar"
+            today = Date.civil(2011, 04, 02)
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_Field = 2011-04-02 LIMIT 1").and_return(nil)
+            @client.should_receive(:create).with(TestClass, "Date_Field" => today).and_return("gar")
+            TestClass.find_or_create_by_Date_Field(today).should == "gar"
           end
 
           it "handles datetime values" do
-            now = Time.now
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")} LIMIT 1").and_return(nil)
+            now = DateTime.civil(2011, 04, 02, 20, 15, 33)
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = 2011-04-02T20:15:33.000+00:00 LIMIT 1").and_return(nil)
             @client.should_receive(:create).with(TestClass, "DateTime_Field" => now).and_return("gar")
             TestClass.find_or_create_by_DateTime_Field(now).should == "gar"
+          end
+
+          it "handles time values" do
+            now = Time.utc(2011, "apr", 2, 20, 15, 33)
+            offs = now.utc.strftime("%z").insert(-3, ":")
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Time_Field = 2011-04-02T20:15:33.000#{offs} LIMIT 1").and_return(nil)
+            @client.should_receive(:create).with(TestClass, "Time_Field" => now).and_return("gar")
+            TestClass.find_or_create_by_Time_Field(now).should == "gar"
           end
 
           it "escapes special characters" do
@@ -421,8 +443,15 @@ describe Databasedotcom::Sobject::Sobject do
           end
 
           it "handles datetime values" do
-            now = Time.now
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = #{now.strftime("%Y-%m-%dT%H:%M:%S.%L%z").insert(-3, ":")} LIMIT 1").and_return(nil)
+            now = DateTime.civil(2011, 04, 02, 20, 15, 33)
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = 2011-04-02T20:15:33.000+00:00 LIMIT 1").and_return(nil)
+            TestClass.find_or_initialize_by_DateTime_Field(now).DateTime_Field.should == now
+          end
+
+          it "handles time values" do
+            now = Time.utc(2011, "apr", 2, 20, 15, 33)
+            offs = now.utc.strftime("%z").insert(-3, ":")
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE DateTime_Field = 2011-04-02T20:15:33.000#{offs} LIMIT 1").and_return(nil)
             TestClass.find_or_initialize_by_DateTime_Field(now).DateTime_Field.should == now
           end
 
@@ -460,7 +489,7 @@ describe Databasedotcom::Sobject::Sobject do
         attrs.keys.each {|attr| obj.attributes[attr].should == attrs[attr]}
       end
     end
-    
+
     describe "#attributes=" do
       it "updates the object with the provided attributes" do
         obj = TestClass.new
