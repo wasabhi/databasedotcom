@@ -499,6 +499,8 @@ module Databasedotcom
               coerced_attrs[key] = (attrs[key] || []).join(';')
             when "datetime"
               coerced_attrs[key] = attrs[key] ? attrs[key].strftime(RUBY_VERSION.match(/^1.8/) ? "%Y-%m-%dT%H:%M:%S.000%z" : "%Y-%m-%dT%H:%M:%S.%L%z") : nil
+            when "date"
+              coerced_attrs[key] = attrs[key] ? attrs[key].strftime("%Y-%m-%d") : nil
             else
               coerced_attrs[key] = attrs[key]
           end

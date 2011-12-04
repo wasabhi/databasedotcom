@@ -437,8 +437,8 @@ describe Databasedotcom::Sobject::Sobject do
           end
 
           it "handles date values" do
-            today = Date.today
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_Field = #{today.to_s} LIMIT 1").and_return(nil)
+            today = Date.civil(2011, 11, 28)
+            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Date_Field = 2011-11-28 LIMIT 1").and_return(nil)
             TestClass.find_or_initialize_by_Date_Field(today).Date_Field.should == today
           end
 
