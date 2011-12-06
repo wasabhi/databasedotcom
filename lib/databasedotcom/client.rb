@@ -500,7 +500,11 @@ module Databasedotcom
             when "datetime"
               coerced_attrs[key] = attrs[key] ? attrs[key].strftime(RUBY_VERSION.match(/^1.8/) ? "%Y-%m-%dT%H:%M:%S.000%z" : "%Y-%m-%dT%H:%M:%S.%L%z") : nil
             when "date"
-              coerced_attrs[key] = attrs[key] ? attrs[key].strftime("%Y-%m-%d") : nil
+              if attrs[key]
+                coerced_attrs[key] = attrs[key].respond_to?(:strftime) ? attrs[key].strftime("%Y-%m-%d") : attrs[key]
+              else
+                coerced_attrs[key] = nil
+              end
             else
               coerced_attrs[key] = attrs[key]
           end
