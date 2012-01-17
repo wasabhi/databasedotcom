@@ -463,7 +463,12 @@ describe Databasedotcom::Sobject::Sobject do
 
         context "with multiple attributes" do
           it "searches for a record with the specified attributes and initializes it if it doesn't exist" do
-            @client.should_receive(:query).with("SELECT #{@field_names.join(',')} FROM TestClass WHERE Name = 'Richard' AND Email_Field = 'fake@email.com' LIMIT 1").and_return(nil)
+            @client.should_receive(:query) do |select_statement|
+              select_statement.index("SELECT #{@field_names.join(',')} FROM TestClass WHERE").should be_zero
+              select_statement.index("Name = 'Richard'").should_not == -1
+              select_statement.index("Email_Field = 'fake@email.com'").should_not == -1
+              select_statement.index("LIMIT 1").should_not == -1
+            end
             result = TestClass.find_or_initialize_by_Name_and_Email_Field('Richard', 'fake@email.com')
             result.Name.should == "Richard"
             result.Email_Field.should == "fake@email.com"
