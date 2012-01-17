@@ -550,6 +550,37 @@ describe Databasedotcom::Sobject::Sobject do
           @obj.save
         end
       end
+
+      context "with exclusions argument" do
+        before do
+          @obj = TestClass.new
+          @obj.Name = "testname"
+          @obj.OwnerId = "someownerid"
+          @obj_double = double("object", "Id" => "foo")
+        end
+
+        it "remove any listed fields from the attributes on create" do
+          @client.should_receive(:create) do |clazz, attrs|
+            attrs.include?("Name").should be_false
+            attrs.include?("OwnerId").should be_true
+            @obj_double
+          end
+          
+          @obj.save(:exclusions => ["Name"])
+        end
+        
+        it "remove any listed fields from the attributes on update" do
+          @obj.Id = "foo"
+          
+          @client.should_receive(:update) do |clazz, id, attrs|
+            attrs.include?("Name").should be_false
+            attrs.include?("OwnerId").should be_true
+          end
+          
+          result = @obj.save(:exclusions => ["Name"])
+        end
+      end
+
     end
 
     describe "#update" do

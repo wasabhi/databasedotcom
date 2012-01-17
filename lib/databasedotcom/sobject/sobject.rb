@@ -89,10 +89,21 @@ module Databasedotcom
       #    c = Car.find_by_Color("Yellow")
       #    c.Color = "Green"
       #    c.save
-      def save
+      #
+      # _options_ can contain the following keys:
+      #
+      #    exclusions # an array of field names (case sensitive) to exclude from save
+      def save(options={})
         attr_hash = {}
         selection_attr = self.Id.nil? ? "createable" : "updateable"
         self.class.description["fields"].select { |f| f[selection_attr] }.collect { |f| f["name"] }.each { |attr| attr_hash[attr] = self.send(attr) }
+
+        # allow fields to be removed on a case by case basis as some data is not allowed to be saved 
+        # (e.g. Name field on Account with record type of Person Account) despite the API listing 
+        # some fields as editable
+        if options[:exclusions] and options[:exclusions].respond_to?(:include?) then
+          attr_hash.delete_if { |key, value| options[:exclusions].include?(key.to_s) }
+        end
 
         if self.Id.nil?
           self.Id = self.client.create(self.class, attr_hash).Id
