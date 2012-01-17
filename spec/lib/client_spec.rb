@@ -822,7 +822,6 @@ describe Databasedotcom::Client do
 
             it "applies type coercions before serializing" do
               @client.create(MySobjects::Whizbang, "Date_Field" => Date.civil(2011, 1, 1), "DateTime_Field" => DateTime.civil(2011, 2, 1, 12), "Picklist_Multiselect_Field" => %w(a b))
-              #############
               WebMock.should have_requested(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang").with(:body => {"Date_Field" => "2011-01-01", "DateTime_Field" => "2011-02-01T12:00:00.000+0000", "Picklist_Multiselect_Field" => "a;b"})
             end
             
