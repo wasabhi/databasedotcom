@@ -85,6 +85,11 @@ Then, when you create your client like:
 
 it will use the configuration information that you set with <tt>heroku config:add</tt>.
 
+=== Connect to a SalesForce sandbox account
+Specify the <tt>:host</tt> option when creating your Client, e.g,
+
+    Databasedotcom::Client.new :host => "test.salesforce.com", ...
+
 == Authentication
 The first thing you need to do with the new Client is to authenticate with Salesforce.  You can do this in one of several ways:
 
