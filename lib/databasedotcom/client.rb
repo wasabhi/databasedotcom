@@ -59,7 +59,7 @@ module Databasedotcom
     #    ca_file
     #    verify_mode
     # If the environment variables DATABASEDOTCOM_CLIENT_ID, DATABASEDOTCOM_CLIENT_SECRET, DATABASEDOTCOM_HOST,
-    # DATABASEDOTCOM_DEBUGGING, DATABASEDOTCOM_VERSION, DATABASEDOTCOM_SOBJECT_MODULE, DATABASEDOTCOM_CA_FILE, and/or 
+    # DATABASEDOTCOM_DEBUGGING, DATABASEDOTCOM_VERSION, DATABASEDOTCOM_SOBJECT_MODULE, DATABASEDOTCOM_CA_FILE, and/or
     # DATABASEDOTCOM_VERIFY_MODE are present, they override any other values provided
     def initialize(options = {})
       if options.is_a?(String)
@@ -83,7 +83,7 @@ module Databasedotcom
         self.client_secret = ENV['DATABASEDOTCOM_CLIENT_SECRET'] || @options[:client_secret]
         self.host = ENV['DATABASEDOTCOM_HOST'] || @options[:host] || "login.salesforce.com"
       end
-      
+
       self.debugging = ENV['DATABASEDOTCOM_DEBUGGING'] || @options[:debugging]
       self.version = ENV['DATABASEDOTCOM_VERSION'] || @options[:version]
       self.version = self.version.to_s if self.version
@@ -380,8 +380,8 @@ module Databasedotcom
     end
 
     def https_request(host=nil)
-      Net::HTTP.new(host || URI.parse(self.instance_url).host, 443).tap do |http| 
-        http.use_ssl = true 
+      Net::HTTP.new(host || URI.parse(self.instance_url).host, 443).tap do |http|
+        http.use_ssl = true
         http.ca_file = self.ca_file if self.ca_file
         http.verify_mode = self.verify_mode if self.verify_mode
       end
@@ -416,7 +416,7 @@ module Databasedotcom
         preceding_namespace = match[1]
         classname = match[2]
         raise ArgumentError if preceding_namespace && preceding_namespace != module_namespace.name
-        clazz = module_namespace.const_get(classname.to_sym) rescue nil
+        clazz = module_namespace.const_get(classname.to_sym, false) rescue nil
         clazz ||= self.materialize(classname)
       end
       clazz
