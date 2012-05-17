@@ -872,6 +872,12 @@ describe Databasedotcom::Client do
               @client.update("Whizbang", "rid", "Date_Field" => Date.civil(2011, 1, 1), "DateTime_Field" => DateTime.civil(2011, 2, 1, 12), "Picklist_Multiselect_Field" => %w(a b))
               WebMock.should have_requested(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid").with(:body => {"Date_Field" => "2011-01-01", "DateTime_Field" => "2011-02-01T12:00:00.000+0000", "Picklist_Multiselect_Field" => "a;b"})
             end
+
+            it "applies type coercions with Dates represented as Strings" do
+              stub_request(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid").to_return(:body => nil, :status => 204)
+              @client.update("Whizbang", "rid", "Date_Field" => Date.civil(2011, 1, 1).to_s, "DateTime_Field" => DateTime.civil(2011, 2, 1, 12).to_s, "Picklist_Multiselect_Field" => %w(a b))
+              WebMock.should have_requested(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid").with(:body => {"Date_Field" => "2011-01-01", "DateTime_Field" => "2011-02-01T12:00:00.000+0000", "Picklist_Multiselect_Field" => "a;b"})
+            end
           end
         end
 
