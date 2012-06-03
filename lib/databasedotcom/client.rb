@@ -105,7 +105,7 @@ module Databasedotcom
         req = https_request(self.host)
         user = self.username || options[:username]
         pass = self.password || options[:password]
-        path = "/services/oauth2/token?grant_type=password&client_id=#{self.client_id}&client_secret=#{client_secret}&username=#{CGI.escape(user)}&password=#{CGI.escape(pass)}"
+        path = encode_path_with_params('/services/oauth2/token', :grant_type => 'password', :client_id => self.client_id, :client_secret => self.client_secret, :username => user, :password => pass)
         log_request("https://#{self.host}/#{path}")
         result = req.post(path, "")
         log_response(result)
