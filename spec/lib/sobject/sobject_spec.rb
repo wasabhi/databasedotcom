@@ -50,6 +50,10 @@ describe Databasedotcom::Sobject::Sobject do
               it "sets #{f['name']} to #{picklist_option['value']}" do
                 @sobject.send(f['name'].to_sym).should == picklist_option['value']
               end
+            elsif f['type'] =~ /boolean/
+              it "sets #{f['name']} to #{f['defaultValue']}" do
+                @sobject.send(f['name'].to_sym).should == f['defaultValue']
+              end
             else
               it "sets #{f['name']} to #{f['defaultValueFormula'] ? f['defaultValueFormula'] : 'nil'}" do
                 @sobject.send(f["name"].to_sym).should == f["defaultValueFormula"]

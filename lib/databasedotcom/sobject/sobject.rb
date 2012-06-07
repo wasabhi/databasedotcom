@@ -15,7 +15,9 @@ module Databasedotcom
         super()
         self.class.description["fields"].each do |field|
           if field['type'] =~ /(picklist|multipicklist)/ && picklist_option = field['picklistValues'].find { |p| p['defaultValue'] }
-            self.send("#{field["name"]}=", picklist_option['value'])
+            self.send("#{field["name"]}=", picklist_option["value"])
+          elsif field['type'] =~ /boolean/
+            self.send("#{field["name"]}=", field["defaultValue"])
           else
             self.send("#{field["name"]}=", field["defaultValueFormula"])
           end
