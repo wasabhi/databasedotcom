@@ -46,7 +46,7 @@ describe Databasedotcom::Sobject::Sobject do
 
         describe "default values" do
           response["fields"].each do |f|
-            if f['type'] == 'picklist' && picklist_option = f['picklistValues'].find { |p| p['defaultValue'] }
+            if f['type'] =~ /(picklist|multipicklist)/ && picklist_option = f['picklistValues'].find { |p| p['defaultValue'] }
               it "sets #{f['name']} to #{picklist_option['value']}" do
                 @sobject.send(f['name'].to_sym).should == picklist_option['value']
               end

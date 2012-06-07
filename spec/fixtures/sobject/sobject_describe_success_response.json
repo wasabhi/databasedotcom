@@ -811,7 +811,7 @@
       "value" : "four",
       "active" : true,
       "label" : "four",
-      "defaultValue" : false,
+      "defaultValue" : true,
       "validFor" : null
     }, {
       "value" : "five",
