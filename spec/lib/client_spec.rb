@@ -498,28 +498,6 @@ describe Databasedotcom::Client do
 
     context "with a non-materialized class" do
 
-      describe "#find_or_materialize" do
-        module SomeOtherModule; end
-
-        context "when class exists in the global namespace" do
-          class ::Whizbang; end
-
-          before do
-            response = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/sobject_describe_success_response.json"))
-            stub_request(:get, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/describe").to_return(:body => response, :status => 200)
-            @client.sobject_module = SomeOtherModule
-          end
-
-          after do
-            @client.sobject_module = nil
-          end
-
-          it "should return the materialized class in the module" do
-            @client.send(:find_or_materialize, "Whizbang").should == SomeOtherModule::Whizbang
-          end
-        end
-      end
-
       context "specified by the request" do
         before do
           @client.should_receive(:find_or_materialize).with("OtherWhizbang")
