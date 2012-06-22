@@ -91,7 +91,7 @@ module Databasedotcom
       self.ca_file = ENV['DATABASEDOTCOM_CA_FILE'] || @options[:ca_file]
       self.verify_mode = ENV['DATABASEDOTCOM_VERIFY_MODE'] || @options[:verify_mode]
       self.verify_mode = self.verify_mode.to_i if self.verify_mode
-  end
+    end
 
     # Authenticate to the Force.com API.  _options_ is a Hash, interpreted as follows:
     #
