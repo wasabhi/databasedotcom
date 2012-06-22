@@ -320,6 +320,7 @@ module Databasedotcom
             when "boolean"
               params[attr] = value.is_a?(String) ? value.to_i != 0 : value
             when "currency", "percent", "double"
+              value = value.gsub(/[^-0-9.0-9]/, '').to_f if value.respond_to?(:gsub)
               params[attr] = value.to_f
             when "date"
               params[attr] = Date.parse(value) rescue Date.today

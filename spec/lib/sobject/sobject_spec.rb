@@ -221,11 +221,13 @@ describe Databasedotcom::Sobject::Sobject do
       it "coerces currency attributes" do
         TestClass.coerce_params("Currency_Field" => "123.4")["Currency_Field"].should == 123.4
         TestClass.coerce_params("Currency_Field" => 123.4)["Currency_Field"].should == 123.4
+        TestClass.coerce_params("Currency_Field" => "$123.4")["Currency_Field"].should == 123.4
       end
 
       it "coerces percent attributes" do
         TestClass.coerce_params("Percent_Field" => "123.4")["Percent_Field"].should == 123.4
         TestClass.coerce_params("Percent_Field" => 123.4)["Percent_Field"].should == 123.4
+        TestClass.coerce_params("Percent_Field" => "123.4%")["Percent_Field"].should == 123.4
       end
 
       it "coerces date fields" do
