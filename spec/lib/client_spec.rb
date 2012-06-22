@@ -189,6 +189,13 @@ describe Databasedotcom::Client do
         WebMock.should have_requested(:post, "https://bro.baz/services/oauth2/token?grant_type=password&client_id=client_id&client_secret=client_secret&username=username&password=password")
       end
 
+      it "URL encodes the username and password" do
+        response_body = File.read(File.join(File.dirname(__FILE__), '..', "fixtures/auth_success_response.json"))
+        stub_request(:post, "https://bro.baz/services/oauth2/token?grant_type=password&client_id=client_id&client_secret=client_secret&username=user%26name&password=pass%26word").to_return(:body => response_body, :status => 200)
+        @client.authenticate(:username => "user&name", :password => "pass&word")
+        WebMock.should have_requested(:post, "https://bro.baz/services/oauth2/token?grant_type=password&client_id=client_id&client_secret=client_secret&username=user%26name&password=pass%26word")
+      end
+
       context "with a success response" do
         before do
           response_body = File.read(File.join(File.dirname(__FILE__), '..', "fixtures/auth_success_response.json"))
