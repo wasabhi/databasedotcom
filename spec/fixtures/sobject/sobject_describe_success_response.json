@@ -753,7 +753,7 @@
       "value" : "one",
       "active" : true,
       "label" : "one",
-      "defaultValue" : false,
+      "defaultValue" : true,
       "validFor" : null
     }, {
       "value" : "two",
@@ -811,7 +811,7 @@
       "value" : "four",
       "active" : true,
       "label" : "four",
-      "defaultValue" : false,
+      "defaultValue" : true,
       "validFor" : null
     }, {
       "value" : "five",
