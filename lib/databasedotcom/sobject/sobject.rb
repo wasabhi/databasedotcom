@@ -28,7 +28,7 @@ module Databasedotcom
       # Returns a hash representing the state of this object
       def attributes
         self.class.attributes.inject({}) do |hash, attr|
-          hash[attr] = self.send(attr.to_sym)
+          hash[attr] = self.send(attr.to_sym) if self.respond_to?(attr.to_sym)
           hash
         end
       end
