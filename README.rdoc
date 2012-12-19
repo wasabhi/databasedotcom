@@ -1,6 +1,6 @@
 =databasedotcom
 
-{<img src="https://travis-ci.org/heroku/databasedotcom.png?branch=master" alt="Build Status" />}[https://travis-ci.org/heroku/databasedotcom] {<img src="https://codeclimate.com/badge.png" />}[https://codeclimate.com/github/heroku/databasedotcom]
+{<img src="https://travis-ci.org/heroku/databasedotcom.png?branch=master" alt="Build Status" />}[https://travis-ci.org/heroku/databasedotcom] {<img src="https://codeclimate.com/badge.png" />}[https://codeclimate.com/github/heroku/databasedotcom] {<img src="https://gemnasium.com/heroku/databasedotcom.png" alt="Dependency Status" />}[https://gemnasium.com/heroku/databasedotcom]
 
 databasedotcom is a gem to enable ruby applications to access the SalesForce REST API.  If you use bundler, simply list it in your Gemfile, like so:
 
