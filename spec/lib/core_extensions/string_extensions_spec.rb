@@ -9,4 +9,18 @@ describe "string extensions" do
       "User".resourcerize.should == "user"
     end
   end
+
+  describe "#constantize" do
+    context "when string is empty" do
+      it "returns Object" do
+        "".constantize.should eq(Object)
+      end
+    end
+
+    context "when string ends with ::" do
+      it "returns Object" do
+        "Object::".constantize.should eq(Object)
+      end
+    end
+  end
 end
