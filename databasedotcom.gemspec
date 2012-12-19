@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
 
   s.rubyforge_project = "databasedotcom"
 
-  s.files         = Dir['README.rdoc', 'MIT-LICENSE', 'lib/**/*']
+  s.files         = Dir['README.md', 'MIT-LICENSE', 'lib/**/*']
   s.require_paths = ["lib"]
   s.add_dependency('multipart-post', '~>1.1')
   s.add_dependency('json')
