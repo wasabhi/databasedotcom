@@ -1,3 +1,5 @@
+require 'active_support/core_ext'
+
 require 'databasedotcom/version'
 require 'databasedotcom/core_extensions'
 require 'databasedotcom/client'
