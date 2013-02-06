@@ -158,10 +158,10 @@ module Databasedotcom
         original_classname = clazz
         clazz = original_classname[0,1].capitalize + original_classname[1..-1]
         unless const_defined_in_module(module_namespace, clazz)
-          new_class = module_namespace.const_set(clazz, Class.new(Databasedotcom::Sobject::Sobject))
+          new_class = Class.new(Databasedotcom::Sobject::Sobject)
           new_class.client = self
           new_class.materialize(original_classname)
-          new_class
+          module_namespace.const_set(clazz, new_class)
         else
           module_namespace.const_get(clazz)
         end
