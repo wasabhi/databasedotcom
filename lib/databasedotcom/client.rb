@@ -521,7 +521,7 @@ module Databasedotcom
     end
 
     def key_from_label(label)
-      label.gsub(' ', '_')
+      label.gsub!(' ', '_')
     end
 
     def user_and_pass?(options)
