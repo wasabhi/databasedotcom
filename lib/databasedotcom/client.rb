@@ -514,7 +514,12 @@ module Databasedotcom
               coerced_attrs[key] = attrs[key]
           end
         end
-        coerced_attrs.to_json
+        clazz.description["fields"].select { |field|
+          field['type'] =~ /boolean/ && field['defaultValue'].nil? && field['nillable'] == false && field['defaultedOnCreate'] == true && field['createable'] == true
+        }.inject(coerced_attrs) { |result, field|
+          result[field['name']] ||= false
+          result
+        }.to_json
       else
         attrs
       end
