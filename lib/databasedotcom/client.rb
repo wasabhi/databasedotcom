@@ -493,6 +493,7 @@ module Databasedotcom
     end
 
     def coerced_json(attrs, clazz)
+      p attrs
       if attrs.is_a?(Hash)
         coerced_attrs = {}
         attrs.keys.each do |key|
@@ -517,7 +518,7 @@ module Databasedotcom
           end
         end
         clazz.description["fields"].select { |field|
-          field['type'] =~ /boolean/ && field['defaultValue'].nil? && field['nillable'] == false && field['defaultedOnCreate'] == true && field['createable'] == true
+          field['type'] =~ /boolean/ && field['defaultValue'].nil? && field['nillable'] == false && field['defaultedOnCreate'] == true && (field['createable'] == true || field['updateable'] == true)
         }.inject(coerced_attrs) { |result, field|
           result[field['name']] ||= false
           result
