@@ -518,7 +518,7 @@ module Databasedotcom
           end
         end
         clazz.description["fields"].select { |field|
-          field['type'] =~ /boolean/ && field['defaultValue'].nil? && field['nillable'] == false && field['defaultedOnCreate'] == true && (field['createable'] == true || field['updateable'] == true)
+          field['type'] =~ /boolean/ && field['defaultValue'].nil? && field['nillable'] == false && field['defaultedOnCreate'] == true && field['createable'] == true && field['updateable'] == true
         }.inject(coerced_attrs) { |result, field|
           result[field['name']] ||= false
           result
