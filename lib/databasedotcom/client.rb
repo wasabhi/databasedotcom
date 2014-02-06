@@ -245,10 +245,8 @@ module Databasedotcom
     #
     #    client.update("Car", "rid", {"Color" => "Red"})
     def update(class_or_classname, record_id, new_attrs)
-      p new_attrs
       class_or_classname = find_or_materialize(class_or_classname)
       json_for_update = coerced_json(new_attrs, class_or_classname)
-      p json_for_update
       http_patch("/services/data/v#{self.version}/sobjects/#{class_or_classname.sobject_name}/#{record_id}", json_for_update)
     end
 
@@ -493,7 +491,6 @@ module Databasedotcom
     end
 
     def coerced_json(attrs, clazz)
-      p attrs
       if attrs.is_a?(Hash)
         coerced_attrs = {}
         attrs.keys.each do |key|
