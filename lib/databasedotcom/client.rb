@@ -36,6 +36,8 @@ module Databasedotcom
     attr_accessor :ca_file
     # The SSL verify mode configured for this instance, if any
     attr_accessor :verify_mode
+    # The batch size for pagination cursors
+    attr_accessor :batch_size
 
     # Returns a new client object. _options_ can be one of the following
     #
@@ -49,6 +51,7 @@ module Databasedotcom
     #    sobject_module: My::Module
     #    ca_file: some/ca/file.cert
     #    verify_mode: OpenSSL::SSL::VERIFY_PEER
+    #    batch_size: 2000
     # * A Hash containing the following keys:
     #    client_id
     #    client_secret
@@ -58,7 +61,8 @@ module Databasedotcom
     #    sobject_module
     #    ca_file
     #    verify_mode
-    # If the environment variables DATABASEDOTCOM_CLIENT_ID, DATABASEDOTCOM_CLIENT_SECRET, DATABASEDOTCOM_HOST,
+    #    batch_size
+    # If the environment variables DATABASEDOTCOM_BATCH_SIZE, DATABASEDOTCOM_CLIENT_ID, DATABASEDOTCOM_CLIENT_SECRET, DATABASEDOTCOM_HOST,
     # DATABASEDOTCOM_DEBUGGING, DATABASEDOTCOM_VERSION, DATABASEDOTCOM_SOBJECT_MODULE, DATABASEDOTCOM_CA_FILE, and/or
     # DATABASEDOTCOM_VERIFY_MODE are present, they override any other values provided
     def initialize(options = {})
@@ -84,6 +88,7 @@ module Databasedotcom
         self.host = ENV['DATABASEDOTCOM_HOST'] || @options[:host] || "login.salesforce.com"
       end
 
+      self.batch_size = ENV['DATABASEDOTCOM_BATCH_SIZE'] || @options[:batch_size]
       self.debugging = ENV['DATABASEDOTCOM_DEBUGGING'] || @options[:debugging]
       self.version = ENV['DATABASEDOTCOM_VERSION'] || @options[:version]
       self.version = self.version.to_s if self.version
@@ -285,8 +290,10 @@ module Databasedotcom
     # +Authorization+ header is automatically included, as are any additional headers specified in _headers_.  Returns the HTTPResult if it is of type
     # HTTPSuccess- raises SalesForceError otherwise.
     def http_get(path, parameters={}, headers={})
+      headers.merge!({"Authorization" => "OAuth #{self.oauth_token}"})
+      headers.merge!({"Sforce-Query-Options" => "batchSize=#{self.batch_size}"}) if self.batch_size
       with_encoded_path_and_checked_response(path, parameters) do |encoded_path|
-        https_request.get(encoded_path, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
+        https_request.get(encoded_path, headers)
       end
     end
 
