@@ -1115,7 +1115,7 @@ describe Databasedotcom::Client do
       it "posts the data to the specified path" do
         stub_request(:post, "https://na1.salesforce.com/my/path").to_return(:body => "", :status => 201)
         @client.http_post("/my/path", "data")
-        WebMock.should have_requested(:post, "https://na1.salesforce.com/my/path").with(:data => "data")
+        WebMock.should have_requested(:post, "https://na1.salesforce.com/my/path").with(:body => "data")
       end
 
       it "puts parameters into the path" do
@@ -1173,7 +1173,7 @@ describe Databasedotcom::Client do
       it "upserts the data to the specified path" do
         stub_request(:patch, "https://na1.salesforce.com/my/path").to_return(:body => "", :status => 201)
         @client.http_patch("/my/path", "data")
-        WebMock.should have_requested(:patch, "https://na1.salesforce.com/my/path").with(:data => "data")
+        WebMock.should have_requested(:patch, "https://na1.salesforce.com/my/path").with(:body => "data")
       end
 
       it "puts parameters into the path" do
