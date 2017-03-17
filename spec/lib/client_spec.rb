@@ -16,6 +16,7 @@ describe Databasedotcom::Client do
         ENV['DATABASEDOTCOM_CA_FILE'] = "ca/file.cert"
         ENV['DATABASEDOTCOM_VERIFY_MODE'] = "1"
         ENV['DATABASEDOTCOM_BATCH_SIZE'] = '200'
+        ENV['DATABASEDOTCOM_READ_TIMEOUT'] = "600"
         @client = Databasedotcom::Client.new
       end
 
@@ -30,6 +31,7 @@ describe Databasedotcom::Client do
         ENV.delete "DATABASEDOTCOM_CA_FILE"
         ENV.delete "DATABASEDOTCOM_VERIFY_MODE"
         ENV.delete "DATABASEDOTCOM_BATCH_SIZE"
+        ENV.delete 'DATABASEDOTCOM_READ_TIMEOUT'
       end
 
       it "takes configuration information from the environment, if present" do
@@ -42,6 +44,7 @@ describe Databasedotcom::Client do
         @client.ca_file.should == "ca/file.cert"
         @client.verify_mode.should == 1
         @client.batch_size.should == '200'
+        @client.read_timeout.should == 600
       end
 
       it "takes configuration information from a URL" do
@@ -73,7 +76,7 @@ describe Databasedotcom::Client do
 
     context "from a hash" do
       it "takes configuration information from the hash" do
-        client = Databasedotcom::Client.new("client_id" => "client_id", "client_secret" => "client_secret", "debugging" => true, "host" => "foo.baz", "version" => "77", "ca_file" => "alt/ca/file.cert", "verify_mode" => 3, "batch_size" => 500)
+        client = Databasedotcom::Client.new("client_id" => "client_id", "client_secret" => "client_secret", "debugging" => true, "host" => "foo.baz", "version" => "77", "ca_file" => "alt/ca/file.cert", "verify_mode" => 3, "batch_size" => 500, "read_timeout" => 600)
         client.client_id.should == "client_id"
         client.client_secret.should == "client_secret"
         client.debugging.should be_true
@@ -82,10 +85,11 @@ describe Databasedotcom::Client do
         client.ca_file.should == "alt/ca/file.cert"
         client.verify_mode.should == 3
         client.batch_size.should == 500
+        client.read_timeout.should == 600
       end
 
       it "accepts symbols in the hash" do
-        client = Databasedotcom::Client.new(:client_id => "client_id", :client_secret => "client_secret", :debugging => true, :host => "foo.baz", :version => "77", :ca_file => "alt/ca/file.cert", :verify_mode => 3, :batch_size => 500)
+        client = Databasedotcom::Client.new(:client_id => "client_id", :client_secret => "client_secret", :debugging => true, :host => "foo.baz", :version => "77", :ca_file => "alt/ca/file.cert", :verify_mode => 3, :batch_size => 500, :read_timeout => 600)
         client.client_id.should == "client_id"
         client.client_secret.should == "client_secret"
         client.debugging.should be_true
@@ -94,6 +98,7 @@ describe Databasedotcom::Client do
         client.ca_file.should == "alt/ca/file.cert"
         client.verify_mode.should == 3
         client.batch_size.should == 500
+        client.read_timeout.should == 600
       end
     end
 
