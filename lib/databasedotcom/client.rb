@@ -214,6 +214,11 @@ module Databasedotcom
       collection_from(result.body)
     end
 
+    def queryAll(soql_expr)
+      result = http_get("/services/data/v29.0/queryAll", :q => soql_expr)
+      collection_from(result.body)
+    end
+
     # Returns a Collection of Sobject instances form the results of the SOSL[http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_calls_sosl.htm] search.
     #
     #    client.search("FIND {bar}") #=> [#<Account @Name="foobar", ...>, #<Account @Name="barfoo", ...> ...]
