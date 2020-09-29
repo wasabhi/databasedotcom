@@ -15,6 +15,8 @@ describe Databasedotcom::Client do
         ENV['DATABASEDOTCOM_SOBJECT_MODULE'] = "Databasedotcom::Sobject"
         ENV['DATABASEDOTCOM_CA_FILE'] = "ca/file.cert"
         ENV['DATABASEDOTCOM_VERIFY_MODE'] = "1"
+        ENV['DATABASEDOTCOM_BATCH_SIZE'] = '200'
+        ENV['DATABASEDOTCOM_READ_TIMEOUT'] = "600"
         @client = Databasedotcom::Client.new
       end
 
@@ -28,6 +30,8 @@ describe Databasedotcom::Client do
         ENV.delete "DATABASE_COM_URL"
         ENV.delete "DATABASEDOTCOM_CA_FILE"
         ENV.delete "DATABASEDOTCOM_VERIFY_MODE"
+        ENV.delete "DATABASEDOTCOM_BATCH_SIZE"
+        ENV.delete 'DATABASEDOTCOM_READ_TIMEOUT'
       end
 
       it "takes configuration information from the environment, if present" do
@@ -39,6 +43,8 @@ describe Databasedotcom::Client do
         @client.sobject_module.should == "Databasedotcom::Sobject"
         @client.ca_file.should == "ca/file.cert"
         @client.verify_mode.should == 1
+        @client.batch_size.should == '200'
+        @client.read_timeout.should == 600
       end
 
       it "takes configuration information from a URL" do
@@ -70,7 +76,7 @@ describe Databasedotcom::Client do
 
     context "from a hash" do
       it "takes configuration information from the hash" do
-        client = Databasedotcom::Client.new("client_id" => "client_id", "client_secret" => "client_secret", "debugging" => true, "host" => "foo.baz", "version" => "77", "ca_file" => "alt/ca/file.cert", "verify_mode" => 3)
+        client = Databasedotcom::Client.new("client_id" => "client_id", "client_secret" => "client_secret", "debugging" => true, "host" => "foo.baz", "version" => "77", "ca_file" => "alt/ca/file.cert", "verify_mode" => 3, "batch_size" => 500, "read_timeout" => 600)
         client.client_id.should == "client_id"
         client.client_secret.should == "client_secret"
         client.debugging.should be_true
@@ -78,10 +84,12 @@ describe Databasedotcom::Client do
         client.version.should == "77"
         client.ca_file.should == "alt/ca/file.cert"
         client.verify_mode.should == 3
+        client.batch_size.should == 500
+        client.read_timeout.should == 600
       end
 
       it "accepts symbols in the hash" do
-        client = Databasedotcom::Client.new(:client_id => "client_id", :client_secret => "client_secret", :debugging => true, :host => "foo.baz", :version => "77", :ca_file => "alt/ca/file.cert", :verify_mode => 3)
+        client = Databasedotcom::Client.new(:client_id => "client_id", :client_secret => "client_secret", :debugging => true, :host => "foo.baz", :version => "77", :ca_file => "alt/ca/file.cert", :verify_mode => 3, :batch_size => 500, :read_timeout => 600)
         client.client_id.should == "client_id"
         client.client_secret.should == "client_secret"
         client.debugging.should be_true
@@ -89,6 +97,8 @@ describe Databasedotcom::Client do
         client.version.should == "77"
         client.ca_file.should == "alt/ca/file.cert"
         client.verify_mode.should == 3
+        client.batch_size.should == 500
+        client.read_timeout.should == 600
       end
     end
 
@@ -111,6 +121,10 @@ describe Databasedotcom::Client do
 
       it "defaults to no special verify mode" do
         @client.verify_mode.should be_nil
+      end
+
+      it "defaults to no special batch size" do
+        @client.batch_size.should be_nil
       end
     end
 
@@ -880,7 +894,7 @@ describe Databasedotcom::Client do
               @client.update("Whizbang", "rid", {:Name => "update"})
               WebMock.should have_requested(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid")
             end
-            
+
             it "applies type coercions before serializing" do
               stub_request(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid").to_return(:body => nil, :status => 204)
               @client.update("Whizbang", "rid", "Date_Field" => Date.civil(2011, 1, 1), "DateTime_Field" => DateTime.civil(2011, 2, 1, 12), "Picklist_Multiselect_Field" => %w(a b))
@@ -1106,7 +1120,7 @@ describe Databasedotcom::Client do
       it "posts the data to the specified path" do
         stub_request(:post, "https://na1.salesforce.com/my/path").to_return(:body => "", :status => 201)
         @client.http_post("/my/path", "data")
-        WebMock.should have_requested(:post, "https://na1.salesforce.com/my/path").with(:data => "data")
+        WebMock.should have_requested(:post, "https://na1.salesforce.com/my/path").with(:body => "data")
       end
 
       it "puts parameters into the path" do
@@ -1164,7 +1178,7 @@ describe Databasedotcom::Client do
       it "upserts the data to the specified path" do
         stub_request(:patch, "https://na1.salesforce.com/my/path").to_return(:body => "", :status => 201)
         @client.http_patch("/my/path", "data")
-        WebMock.should have_requested(:patch, "https://na1.salesforce.com/my/path").with(:data => "data")
+        WebMock.should have_requested(:patch, "https://na1.salesforce.com/my/path").with(:body => "data")
       end
 
       it "puts parameters into the path" do

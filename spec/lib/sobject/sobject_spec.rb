@@ -696,6 +696,19 @@ describe Databasedotcom::Sobject::Sobject do
       end
     end
 
+    describe ".nillable?" do
+      it "returns the nillable flag for an attribute" do
+        TestClass.nillable?("Picklist_Field").should be_true
+        TestClass.nillable?("Id").should be_false
+      end
+
+      it "raises ArgumentError for unknown attributes" do
+        lambda {
+          TestClass.nillable?("Foobar")
+        }.should raise_error(ArgumentError)
+      end
+    end
+
     describe "#[]" do
       before do
         @obj = TestClass.new

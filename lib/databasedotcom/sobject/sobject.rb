@@ -17,7 +17,7 @@ module Databasedotcom
           if field['type'] =~ /(picklist|multipicklist)/ && picklist_option = field['picklistValues'].find { |p| p['defaultValue'] }
             self.send("#{field["name"]}=", picklist_option["value"])
           elsif field['type'] =~ /boolean/
-            self.send("#{field["name"]}=", field["defaultValue"])
+            self.send("#{field["name"]}=", field["defaultValue"] || false)
           else
             self.send("#{field["name"]}=", field["defaultValueFormula"])
           end
@@ -210,6 +210,15 @@ module Databasedotcom
         self.type_map_attr(attr_name, :createable?)
       end
 
+      # Returns true if the attribute +attr_name+ is nillable. Raises ArgumentError if attribute does not exist.
+      def self.createable?(attr_name)
+        self.type_map_attr(attr_name, :createable?)
+      end
+
+      def self.nillable?(attr_name)
+        self.type_map_attr(attr_name, :nillable?)
+      end
+
       # Delegates to Client.find with arguments +record_id+ and self
       #
       #    client.materialize("Car")
@@ -341,7 +350,8 @@ module Databasedotcom
           :label => field["label"],
           :picklist_values => field["picklistValues"],
           :updateable? => field["updateable"],
-          :createable? => field["createable"]
+          :createable? => field["createable"],
+          :nillable? => field["nillable"]
         }
       end
 
