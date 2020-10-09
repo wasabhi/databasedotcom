@@ -22,7 +22,7 @@ module Databasedotcom
         path_components << "feed-items"
         path = "/" + path_components.compact.join('/')
         result = client.http_get(path)
-        response = JSON.parse(result.body)
+        response = Databasedotcom::Utils.emoji_safe_json_parse(result.body)
         collection = self.new(client, nil, response["nextPageUrl"], response["previousPageUrl"], response["currentPageUrl"])
         response["items"].each do |item|
           collection << FeedItem.new(client, item)

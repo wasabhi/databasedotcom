@@ -11,7 +11,7 @@ module Databasedotcom
       def self.followers(client, subject_id="me")
         url = "/services/data/v#{client.version}/chatter/users/#{subject_id}/followers"
         result = client.http_get(url)
-        response = JSON.parse(result.body)
+        response = Databasedotcom::Utils.emoji_safe_json_parse(result.body)
         collection = Databasedotcom::Collection.new(client, response["total"], response["nextPageUrl"], response["previousPageUrl"], response["currentPageUrl"])
         response["followers"].each do |subscription|
           collection << Subscription.new(client, subscription)
@@ -23,7 +23,7 @@ module Databasedotcom
       def self.following(client, subject_id="me")
         url = "/services/data/v#{client.version}/chatter/users/#{subject_id}/following"
         result = client.http_get(url)
-        response = JSON.parse(result.body)
+        response = Databasedotcom::Utils.emoji_safe_json_parse(result.body)
         collection = Databasedotcom::Collection.new(client, response["total"], response["nextPageUrl"], response["previousPageUrl"], response["currentPageUrl"])
         response["following"].each do |subscription|
           collection << Subscription.new(client, subscription)
@@ -35,7 +35,7 @@ module Databasedotcom
       def self.groups(client, subject_id="me")
         url = "/services/data/v#{client.version}/chatter/users/#{subject_id}/groups"
         result = client.http_get(url)
-        response = JSON.parse(result.body)
+        response = Databasedotcom::Utils.emoji_safe_json_parse(result.body)
         collection = Databasedotcom::Collection.new(client, response["total"], response["nextPageUrl"], response["previousPageUrl"], response["currentPageUrl"])
         response["groups"].each do |group|
           collection << Group.new(client, group)
@@ -47,14 +47,14 @@ module Databasedotcom
       def self.status(client, subject_id="me")
         url = "/services/data/v#{client.version}/chatter/users/#{subject_id}/status"
         result = client.http_get(url)
-        JSON.parse(result.body)
+        Databasedotcom::Utils.emoji_safe_json_parse(result.body)
       end
 
       # Posts a status update as the User identified by _subject_id_ with content _text_.
       def self.post_status(client, subject_id, text)
         url = "/services/data/v#{client.version}/chatter/users/#{subject_id}/status"
         result = client.http_post(url, nil, :text => text)
-        JSON.parse(result.body)
+        Databasedotcom::Utils.emoji_safe_json_parse(result.body)
       end
 
       # Deletes the status of User identified by _subject_id_.

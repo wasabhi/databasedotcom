@@ -14,7 +14,7 @@ describe Databasedotcom::Sobject::Sobject do
 
   describe "materialization" do
     context "with a valid Sobject name" do
-      response = JSON.parse(File.read(File.join(File.dirname(__FILE__), "../../fixtures/sobject/sobject_describe_success_response.json")))
+      response = Databasedotcom::Utils.emoji_safe_json_parse(File.read(File.join(File.dirname(__FILE__), "../../fixtures/sobject/sobject_describe_success_response.json")))
 
       it "requests a description of the class" do
         @client.should_receive(:describe_sobject).with("TestClass").and_return(response)
@@ -76,7 +76,7 @@ describe Databasedotcom::Sobject::Sobject do
 
   context "with a materialized class" do
     before do
-      response = JSON.parse(File.read(File.join(File.dirname(__FILE__), "../../fixtures/sobject/sobject_describe_success_response.json")))
+      response = Databasedotcom::Utils.emoji_safe_json_parse(File.read(File.join(File.dirname(__FILE__), "../../fixtures/sobject/sobject_describe_success_response.json")))
       @client.should_receive(:describe_sobject).with("TestClass").and_return(response)
       TestClass.materialize("TestClass")
       @field_names = TestClass.description["fields"].collect { |f| f["name"] }

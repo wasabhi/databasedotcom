@@ -150,7 +150,7 @@ module Databasedotcom
     def list_sobjects
       result = http_get("/services/data/v#{self.version}/sobjects")
       if result.is_a?(Net::HTTPOK)
-        JSON.parse(result.body)["sobjects"].collect { |sobject| sobject["name"] }
+        Databasedotcom::Utils.emoji_safe_json_parse(result.body)["sobjects"].collect { |sobject| sobject["name"] }
       elsif result.is_a?(Net::HTTPBadRequest)
         raise SalesForceError.new(result)
       end
@@ -182,13 +182,13 @@ module Databasedotcom
     # Returns an Array of Hashes listing the properties for every type of _Sobject_ in the database. Raises SalesForceError if an error occurs.
     def describe_sobjects
       result = http_get("/services/data/v#{self.version}/sobjects")
-      JSON.parse(result.body)["sobjects"]
+      Databasedotcom::Utils.emoji_safe_json_parse(result.body)["sobjects"]
     end
 
     # Returns a description of the Sobject specified by _class_name_. The description includes all fields and their properties for the Sobject.
     def describe_sobject(class_name)
       result = http_get("/services/data/v#{self.version}/sobjects/#{class_name}/describe")
-      JSON.parse(result.body)
+      Databasedotcom::Utils.emoji_safe_json_parse(result.body)
     end
 
     # Returns an instance of the Sobject specified by _class_or_classname_ (which can be either a String or a Class) populated with the values of the Force.com record specified by _record_id_.
@@ -198,7 +198,7 @@ module Databasedotcom
     def find(class_or_classname, record_id)
       class_or_classname = find_or_materialize(class_or_classname)
       result = http_get("/services/data/v#{self.version}/sobjects/#{class_or_classname.sobject_name}/#{record_id}")
-      response = JSON.parse(result.body)
+      response = Databasedotcom::Utils.emoji_safe_json_parse(result.body)
       new_record = class_or_classname.new
       class_or_classname.description["fields"].each do |field|
         set_value(new_record, field["name"], response[key_from_label(field["label"])] || response[field["name"]], field["type"])
@@ -247,10 +247,10 @@ module Databasedotcom
       json_for_assignment = coerced_json(object_attrs, class_or_classname)
       result = http_post("/services/data/v#{self.version}/sobjects/#{class_or_classname.sobject_name}", json_for_assignment)
       new_object = class_or_classname.new
-      JSON.parse(json_for_assignment).each do |property, value|
+      Databasedotcom::Utils.emoji_safe_json_parse(json_for_assignment).each do |property, value|
         set_value(new_object, property, value, class_or_classname.type_map[property][:type])
       end
-      id = JSON.parse(result.body)["id"]
+      id = Databasedotcom::Utils.emoji_safe_json_parse(result.body)["id"]
       set_value(new_object, "Id", id, "id")
       new_object
     end
@@ -291,7 +291,7 @@ module Databasedotcom
     # Returns an array of trending topic names.
     def trending_topics
       result = http_get("/services/data/v#{self.version}/chatter/topics/trending")
-      result = JSON.parse(result.body)
+      result = Databasedotcom::Utils.emoji_safe_json_parse(result.body)
       result["topics"].collect { |topic| topic["name"] }
     end
 
@@ -446,7 +446,7 @@ module Databasedotcom
     end
 
     def collection_from(response)
-      response = JSON.parse(response)
+      response = Databasedotcom::Utils.emoji_safe_json_parse(response)
       collection_from_hash( response )
     end
 
@@ -557,7 +557,7 @@ module Databasedotcom
     end
 
     def parse_auth_response(body)
-      json = JSON.parse(body)
+      json = Databasedotcom::Utils.emoji_safe_json_parse(body)
       parse_user_id_and_org_id_from_identity_url(json["id"])
       self.instance_url = json["instance_url"]
       self.oauth_token = json["access_token"]

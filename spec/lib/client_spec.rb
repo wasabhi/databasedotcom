@@ -259,7 +259,7 @@ describe Databasedotcom::Client do
 
     context "with an omniauth response" do
       before do
-        @response = JSON.parse(File.read(File.join(File.dirname(__FILE__), '..', "fixtures/omniauth_response.json")))
+        @response = Databasedotcom::Utils.emoji_safe_json_parse(File.read(File.join(File.dirname(__FILE__), '..', "fixtures/omniauth_response.json")))
       end
 
       it "parses the response token from the ominauth hash" do
@@ -640,7 +640,7 @@ describe Databasedotcom::Client do
 
           it "initializes attribute values on the returned instance" do
             whizbang = @client.find(MySobjects::Whizbang, "23foo")
-            response = JSON.parse(@response_body)
+            response = Databasedotcom::Utils.emoji_safe_json_parse(@response_body)
             MySobjects::Whizbang.description["fields"].collect { |f| [f["name"], f["label"]] }.each do |name, label|
               unless %w(Date_Field DateTime_Field Picklist_Multiselect_Field OtherDateTime_Field).include?(name)
                 whizbang.send(name.to_sym).should == (response[label.gsub(' ', '_')] || response[name])

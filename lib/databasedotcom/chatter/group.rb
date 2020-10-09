@@ -11,7 +11,7 @@ module Databasedotcom
       def self.members(client, group_id)
         url = "/services/data/v#{client.version}/chatter/groups/#{group_id}/members"
         result = client.http_get(url)
-        response = JSON.parse(result.body)
+        response = Databasedotcom::Utils.emoji_safe_json_parse(result.body)
         collection = Databasedotcom::Collection.new(client, response["totalMemberCount"], response["nextPageUrl"], response["previousPageUrl"], response["currentPageUrl"])
         response["members"].each do |member|
           collection << GroupMembership.new(client, member)

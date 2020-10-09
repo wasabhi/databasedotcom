@@ -9,7 +9,7 @@ module Databasedotcom
       # Create a new record from the returned JSON response of an API request. Sets the client, name, id, url, and type attributes. Saves the raw response as +raw_hash+.
       def initialize(client, response)
         @client = client
-        @raw_hash = response.is_a?(Hash) ? response : JSON.parse(response)
+        @raw_hash = response.is_a?(Hash) ? response : Databasedotcom::Utils.emoji_safe_json_parse(response)
         @name = @raw_hash["name"]
         @id = @raw_hash["id"]
         @url = @raw_hash["url"]
@@ -21,7 +21,7 @@ module Databasedotcom
         if resource_id.is_a?(Array)
           resource_ids = resource_id.join(',')
           url = "/services/data/v#{client.version}/chatter/#{self.resource_name}/batch/#{resource_ids}"
-          response = JSON.parse(client.http_get(url, parameters).body)
+          response = Databasedotcom::Utils.emoji_safe_json_parse(client.http_get(url, parameters).body)
           good_results = response["results"].select { |r| r["statusCode"] == 200 }
           collection = Databasedotcom::Collection.new(client, good_results.length)
           good_results.each do |result|
@@ -36,7 +36,7 @@ module Databasedotcom
           end
           path_components << "#{self.resource_name}/#{resource_id}"
           url = path_components.join('/')
-          response = JSON.parse(client.http_get(url, parameters).body)
+          response = Databasedotcom::Utils.emoji_safe_json_parse(client.http_get(url, parameters).body)
           self.new(client, response)
         end
       end
@@ -56,7 +56,7 @@ module Databasedotcom
         path_components << self.resource_name
         url = path_components.join('/')
         result = client.http_get(url, parameters)
-        response = JSON.parse(result.body)
+        response = Databasedotcom::Utils.emoji_safe_json_parse(result.body)
         collection = Databasedotcom::Collection.new(client, self.total_size_of_collection(response), response["nextPageUrl"], response["previousPageUrl"], response["currentPageUrl"])
         self.collection_from_response(response).each do |resource|
           collection << self.new(client, resource)

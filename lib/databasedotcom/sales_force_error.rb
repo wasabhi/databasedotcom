@@ -8,7 +8,7 @@ module Databasedotcom
 
     def initialize(response)
       self.response = response
-      parsed_body = JSON.parse(response.body) rescue nil
+      parsed_body = Databasedotcom::Utils.emoji_safe_json_parse(response.body) rescue nil
       if parsed_body
         if parsed_body.is_a?(Array)
           message = parsed_body[0]["message"]

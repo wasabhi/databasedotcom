@@ -12,7 +12,7 @@ module Databasedotcom
         def photo(client, resource_id)
           url = "/services/data/v#{client.version}/chatter/#{self.resource_name}/#{resource_id}/photo"
           result = client.http_get(url)
-          JSON.parse(result.body)
+          Databasedotcom::Utils.emoji_safe_json_parse(result.body)
         end
 
         # Uploads a photo for a resource with id _resource_id_.
@@ -21,7 +21,7 @@ module Databasedotcom
         def upload_photo(client, resource_id, io, file_type)
           url = "/services/data/v#{client.version}/chatter/#{self.resource_name}/#{resource_id}/photo"
           result = client.http_multipart_post(url, {"fileUpload" => UploadIO.new(io, file_type)})
-          JSON.parse(result.body)
+          Databasedotcom::Utils.emoji_safe_json_parse(result.body)
         end
 
         # Deletes the photo for the resource with id _resource_id_.

@@ -7,7 +7,7 @@ module Databasedotcom
       def self.feeds(client, user_id="me")
         url = "/services/data/v#{client.version}/chatter/feeds/filter/#{user_id}"
         result = client.http_get(url)
-        JSON.parse(result.body)
+        Databasedotcom::Utils.emoji_safe_json_parse(result.body)
       end
     end
   end

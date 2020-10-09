@@ -6,7 +6,7 @@ describe Databasedotcom::SalesForceError do
   context "with a non-array body" do
     before do
       @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/auth_error_response.json"))
-      @response_json = JSON.parse(@response_body)
+      @response_json = Databasedotcom::Utils.emoji_safe_json_parse(@response_body)
       @response = double("result", :body => @response_body)
       @exception = Databasedotcom::SalesForceError.new(@response)
     end
@@ -33,7 +33,7 @@ describe Databasedotcom::SalesForceError do
   context "with a array body" do
     before do
       @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/search_error_response.json"))
-      @response_json = JSON.parse(@response_body)
+      @response_json = Databasedotcom::Utils.emoji_safe_json_parse(@response_body)
       @response = double("result", :body => @response_body)
       @exception = Databasedotcom::SalesForceError.new(@response)
     end
